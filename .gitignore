@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.wrangler/
+.cache/
+.npm/
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+.netrc
+.git-credentials
+*.log
+.DS_Store

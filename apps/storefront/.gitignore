@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.env
+
+# Cloudflare / Wrangler local cache
+.wrangler/

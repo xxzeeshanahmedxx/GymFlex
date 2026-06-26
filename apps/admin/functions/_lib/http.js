@@ -1,0 +1,32 @@
+export function json(data, status = 200, headers = {}) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      ...headers,
+    },
+  });
+}
+
+export function error(message, status = 400, details = null) {
+  return json({ error: message, details }, status);
+}
+
+export function noContent(headers = {}) {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'cache-control': 'no-store',
+      ...headers,
+    },
+  });
+}
+
+export async function readJson(request) {
+  try {
+    return await request.json();
+  } catch {
+    return null;
+  }
+}

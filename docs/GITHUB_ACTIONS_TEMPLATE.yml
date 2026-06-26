@@ -1,0 +1,55 @@
+name: Deploy store template apps
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        type: choice
+        required: true
+        default: all
+        options: [all, storefront, admin]
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+
+jobs:
+  deploy-storefront:
+    if: github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'storefront') || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/storefront
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/storefront/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npx wrangler pages deploy dist --project-name ${{ vars.STOREFRONT_PROJECT }} --branch main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-admin:
+    if: github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'admin') || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npx wrangler pages deploy dist --project-name ${{ vars.ADMIN_PROJECT }} --branch main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

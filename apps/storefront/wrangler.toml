@@ -1,0 +1,16 @@
+name = "gymflex"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-06-22"
+
+[[kv_namespaces]]
+binding = "STORE_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[[d1_databases]]
+binding = "STORE_DB"
+database_name = "gymflex_d1"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[[r2_buckets]]
+binding = "STORE_BUCKET"
+bucket_name = "gymflex-r2"

@@ -1,0 +1,15 @@
+{
+  "name": "zero-template",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Generic Cloudflare ecommerce storefront + admin template for AI agents.",
+  "workspaces": [
+    "apps/storefront",
+    "apps/admin"
+  ],
+  "scripts": {
+    "build:storefront": "npm --prefix apps/storefront install && npm --prefix apps/storefront run build",
+    "build:admin": "npm --prefix apps/admin install && npm --prefix apps/admin run build",
+    "build:all": "npm run build:storefront && npm run build:admin"
+  }
+}
