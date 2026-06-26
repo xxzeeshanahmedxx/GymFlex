@@ -11,8 +11,8 @@ const DEFAULT_SHIPPING_FEE = 250;
 const states = ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Gilgit-Baltistan', 'Azad Kashmir'];
 
 const inputClassName =
-  'block w-full rounded-2xl border border-[#c8d0d0] bg-[#DEE2E2] px-4 py-3.5 text-base font-semibold text-stone-900 placeholder:text-stone-500 outline-none transition focus:border-brand-pink focus:bg-[#edf0f0]';
-const labelClassName = 'block text-xs font-bold text-gray-600 uppercase tracking-widest mb-2';
+  'block w-full rounded-2xl border border-white/20 bg-[#1a1a1a] px-4 py-3.5 text-base font-semibold text-white placeholder:text-gray-500 outline-none transition focus:border-brand-pink focus:bg-[#222]';
+const labelClassName = 'block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2';
 
 function EmptyCartState({ onContinueShopping }) {
   return (
@@ -209,10 +209,10 @@ export default function Checkout() {
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1.15fr,0.85fr] lg:items-start">
-        <section className="rounded-3xl border border-stone-200 bg-[#fbf7ef] p-6 shadow-[0_20px_50px_-12px_rgba(45,32,24,0.14)] sm:p-8">
-          <h2 className="text-xl font-heading font-[850] text-gray-900 mb-6 uppercase tracking-wider">Delivery details</h2>
+        <section className="rounded-3xl border border-white/10 bg-[#111] p-6 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] sm:p-8">
+          <h2 className="text-xl font-heading font-[850] text-white mb-6 uppercase tracking-wider">Delivery details</h2>
 
-          <div className="grid grid-cols-1 gap-5 rounded-3xl border border-stone-200 bg-white/70 p-4 sm:p-5">
+          <div className="grid grid-cols-1 gap-5 rounded-3xl border border-white/10 bg-black/50 p-4 sm:p-5">
             <div>
               <label htmlFor="full-name" className={labelClassName}>Name</label>
               <input id="full-name" name="full-name" className={inputClassName} type="text" minLength={2} required autoComplete="name" />
@@ -248,8 +248,8 @@ export default function Checkout() {
           {error ? <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div> : null}
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-[#fbf7ef] p-6 shadow-[0_20px_50px_-12px_rgba(45,32,24,0.1)] sm:p-8 lg:sticky lg:top-28">
-          <h2 className="text-xl font-heading font-[850] text-gray-900 mb-4 uppercase tracking-wider">Your order</h2>
+        <section className="rounded-3xl border border-white/10 bg-[#111] p-6 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] sm:p-8 lg:sticky lg:top-28">
+          <h2 className="text-xl font-heading font-[850] text-white mb-4 uppercase tracking-wider">Your order</h2>
           <OrderItems cart={cart} subtotal={cartTotal} shippingFee={shippingFee} total={orderTotal} />
           <div className="mt-5 border-t border-gray-100 pt-5 grid gap-3">
             <div className="flex items-center justify-between text-sm font-bold text-gray-500">

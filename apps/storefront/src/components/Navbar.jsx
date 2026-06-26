@@ -10,7 +10,7 @@ const fallbackNavigation = [
   { label: 'Sale', to: '/sale', highlight: true },
 ];
 
-const navLinkClassName = 'relative text-stone-900 text-sm font-bold tracking-widest uppercase hover:text-brand-pink transition-colors py-2 group block w-full text-center sm:inline-block sm:w-auto sm:text-left';
+const navLinkClassName = 'relative text-white text-sm font-bold tracking-widest uppercase hover:text-brand-pink transition-colors py-2 group block w-full text-center sm:inline-block sm:w-auto sm:text-left';
 const underlineClassName = 'absolute bottom-0 left-0 w-full h-[2px] bg-brand-pink transform scale-x-0 origin-bottom-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-bottom-left';
 
 function buildNavigation(categories, settings) {
@@ -35,7 +35,7 @@ function NavigationLink({ item, onClick, mobile = false }) {
 
 function CartButton({ count, onClick }) {
   return (
-    <button onClick={onClick} className="store-cart-button text-stone-900 relative transition-colors duration-300 hover:text-brand-pink" aria-label="Open cart">
+    <button onClick={onClick} className="store-cart-button text-white relative transition-colors duration-300 hover:text-brand-pink" aria-label="Open cart">
       <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
       {count > 0 ? <span className="store-cart-count">{count}</span> : null}
     </button>
@@ -63,11 +63,11 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-40 w-full bg-white/95 border-b border-pink-100 shadow-sm font-sans transition-colors duration-300 backdrop-blur-xl">
+      <nav className="sticky top-0 z-40 w-full bg-black/95 border-b border-brand-pink/20 shadow-sm font-sans transition-colors duration-300 backdrop-blur-xl">
         <div className="max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-20 pt-1 sm:pt-2 relative">
             <div className="w-1/4 sm:w-1/3 flex items-center justify-start sm:hidden">
-              <button onClick={() => setIsMobileMenuOpen(true)} className="mobile-menu-button p-2 text-stone-900 hover:text-brand-pink transition-colors" aria-label="Open menu">
+              <button onClick={() => setIsMobileMenuOpen(true)} className="mobile-menu-button p-2 text-white hover:text-brand-pink transition-colors" aria-label="Open menu">
                 <Menu className="w-6 h-6" />
               </button>
             </div>
@@ -75,7 +75,7 @@ export default function Navbar() {
             <div className="hidden sm:block sm:w-1/3"></div>
 
             <div className="w-2/4 sm:w-1/3 flex justify-center">
-              <Link to="/" className="text-2xl sm:text-3xl md:text-4xl font-heading font-[850] text-stone-950 tracking-widest hover:text-brand-pink transition-colors duration-300 text-center whitespace-nowrap">GYMFLEX</Link>
+              <Link to="/" className="text-2xl sm:text-3xl md:text-4xl font-heading font-[850] text-white tracking-widest hover:text-brand-pink transition-colors duration-300 text-center whitespace-nowrap">GYMFLEX</Link>
             </div>
 
             <div className="w-1/4 sm:w-1/3 flex justify-end items-center space-x-3 sm:space-x-6 pr-0 sm:pr-8">
