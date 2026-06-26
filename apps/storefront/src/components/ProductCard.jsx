@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { Heart } from 'lucide-react';
+import { useShop } from '../context/useShop';
 import { getEffectivePrice, getProductPath, getProductPrimaryImage } from '../lib/product-utils';
 
 function getSalePrice(product) {
@@ -17,6 +19,8 @@ export const ProductCard = ({ product }) => {
   const effectivePrice = getEffectivePrice(product);
   const productPath = getProductPath(product);
   const hasRealSale = isProductOnSale(product);
+  const { toggleWishlist, isInWishlist } = useShop();
+  const liked = isInWishlist(product.id);
 
   return (
     <article className="store-product-card group block animate-fade-in-up">
@@ -27,6 +31,15 @@ export const ProductCard = ({ product }) => {
               Sale
             </span>
           )}
+
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
+            className="absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+            aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
+            <Heart className={`w-4.5 h-4.5 transition-colors ${liked ? 'fill-brand-pink text-brand-pink' : 'text-white'}`} />
+          </button>
 
           <div className="product-card-image-skeleton" aria-hidden="true" />
           {imageUrl ? (

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FolderKanban, LogOut, Package, RefreshCw, Settings, ShoppingBag } from 'lucide-react';
+import { FolderKanban, LogOut, Package, Percent, RefreshCw, Settings, ShoppingBag } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -7,6 +7,7 @@ const links = [
   { to: '/products', label: 'Products', icon: Package },
   { to: '/orders', label: 'Orders', icon: ShoppingBag },
   { to: '/categories', label: 'Categories', icon: FolderKanban },
+  { to: '/discounts', label: 'Discounts', icon: Percent },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 

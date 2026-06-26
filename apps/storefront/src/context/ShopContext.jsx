@@ -6,6 +6,7 @@ import { getEffectivePrice } from '../lib/product-utils';
 const STORAGE_KEYS = {
   cart: 'cart',
   recentlyViewed: 'recentlyViewed',
+  wishlist: 'wishlist',
 };
 
 function getVariantId(variant) {
@@ -19,6 +20,7 @@ function isSameCartItem(item, productId, variantId) {
 export function ShopProvider({ children }) {
   const [cart, setCart] = useLocalStorageState(STORAGE_KEYS.cart, []);
   const [recentlyViewed, setRecentlyViewed] = useLocalStorageState(STORAGE_KEYS.recentlyViewed, []);
+  const [wishlist, setWishlist] = useLocalStorageState(STORAGE_KEYS.wishlist, []);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const addToCart = useCallback((product, variant, quantity = 1) => {
@@ -55,6 +57,18 @@ export function ShopProvider({ children }) {
     });
   }, [setRecentlyViewed]);
 
+  const toggleWishlist = useCallback((product) => {
+    setWishlist((current) => {
+      const exists = current.some((item) => item.id === product.id);
+      if (exists) return current.filter((item) => item.id !== product.id);
+      return [...current, product];
+    });
+  }, [setWishlist]);
+
+  const isInWishlist = useCallback((productId) => {
+    return wishlist.some((item) => item.id === productId);
+  }, [wishlist]);
+
   const cartCount = useMemo(() => cart.reduce((total, item) => total + item.quantity, 0), [cart]);
   const cartTotal = useMemo(() => cart.reduce((total, item) => total + getEffectivePrice(item.product) * item.quantity, 0), [cart]);
 
@@ -67,6 +81,9 @@ export function ShopProvider({ children }) {
     clearCart,
     recentlyViewed,
     addRecentlyViewed,
+    wishlist,
+    toggleWishlist,
+    isInWishlist,
     isCartOpen,
     setIsCartOpen,
   }), [
@@ -78,6 +95,9 @@ export function ShopProvider({ children }) {
     clearCart,
     recentlyViewed,
     addRecentlyViewed,
+    wishlist,
+    toggleWishlist,
+    isInWishlist,
     isCartOpen,
   ]);
 

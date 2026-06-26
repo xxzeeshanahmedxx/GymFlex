@@ -7,6 +7,7 @@ import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
+import { DiscountsPage } from './pages/DiscountsPage';
 
 const ProductEditorPage = lazy(() => import('./pages/ProductEditorPage').then((module) => ({ default: module.ProductEditorPage })));
 const OrdersPage = lazy(() => import('./pages/OrdersPage').then((module) => ({ default: module.OrdersPage })));
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="products/:id" element={<LazyPage><ProductEditorPage /></LazyPage>} />
           <Route path="orders" element={<LazyPage><OrdersPage /></LazyPage>} />
           <Route path="orders/:id" element={<LazyPage><OrderDetailsPage /></LazyPage>} />
+          <Route path="discounts" element={<LazyPage><DiscountsPage /></LazyPage>} />
           <Route path="settings" element={<LazyPage><SettingsPage /></LazyPage>} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />

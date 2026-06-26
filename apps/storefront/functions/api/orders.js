@@ -30,6 +30,7 @@ export async function onRequestPost(context) {
   const body = await readJson(context.request);
   const customer = body?.customer || {};
   const cartItems = Array.isArray(body?.items) ? body.items : [];
+  const discountCode = cleanString(body?.discountCode || '').toUpperCase();
 
   const firstName = cleanString(customer.firstName);
   const lastName = cleanString(customer.lastName);
@@ -103,12 +104,37 @@ export async function onRequestPost(context) {
   const orderNumber = generateOrderNumber();
   const shippingSettings = await getShippingSettings(context.env.STORE_DB);
   const shippingFee = subtotal > 0 && (!shippingSettings.freeShippingMinimum || subtotal < shippingSettings.freeShippingMinimum) ? shippingSettings.shippingFee : 0;
-  const total = subtotal + shippingFee;
+
+  let discountAmount = 0;
+  let appliedDiscountCode = '';
+
+  if (discountCode) {
+    const discountRow = await context.env.STORE_DB
+      .prepare('SELECT * FROM discount_codes WHERE code = ? AND is_active = 1 AND (max_uses IS NULL OR used_count < max_uses) AND (expires_at IS NULL OR expires_at >= CURRENT_TIMESTAMP) LIMIT 1')
+      .bind(discountCode)
+      .first();
+
+    if (discountRow && subtotal >= discountRow.min_order_amount) {
+      appliedDiscountCode = discountCode;
+      if (discountRow.type === 'percentage') {
+        discountAmount = Math.round(subtotal * (discountRow.value / 100));
+      } else {
+        discountAmount = Math.min(discountRow.value, subtotal);
+      }
+
+      await context.env.STORE_DB
+        .prepare('UPDATE discount_codes SET used_count = used_count + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+        .bind(discountRow.id)
+        .run();
+    }
+  }
+
+  const total = Math.max(0, subtotal + shippingFee - discountAmount);
 
   const statements = [
     context.env.STORE_DB
-      .prepare('INSERT INTO orders (id, order_number, first_name, last_name, address, state, city, phone, country, payment_method, status, subtotal, shipping_fee, total, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(orderId, orderNumber, firstName, lastName, address, state, city, phone, country, paymentMethod, 'new', subtotal, shippingFee, total, 'PKR'),
+      .prepare('INSERT INTO orders (id, order_number, first_name, last_name, address, state, city, phone, country, payment_method, status, subtotal, shipping_fee, total, currency, discount_code, discount_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(orderId, orderNumber, firstName, lastName, address, state, city, phone, country, paymentMethod, 'new', subtotal, shippingFee, total, 'PKR', appliedDiscountCode, discountAmount),
     ...items.map((item) =>
       context.env.STORE_DB
         .prepare('INSERT INTO order_items (id, order_id, product_id, product_name, variant_id, variant_type, variant_name, unit_price, quantity, line_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
@@ -125,6 +151,8 @@ export async function onRequestPost(context) {
       orderNumber,
       subtotal,
       shippingFee,
+      discountAmount,
+      discountCode: appliedDiscountCode,
       total,
       status: 'new',
     },

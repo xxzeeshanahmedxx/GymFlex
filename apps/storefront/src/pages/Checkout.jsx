@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/useShop';
 import { getEffectivePrice } from '../lib/product-utils';
@@ -117,13 +117,45 @@ export default function Checkout() {
   const { cart, cartTotal, clearCart } = useShop();
   const [shippingSettings, setShippingSettings] = useState({ shippingFee: DEFAULT_SHIPPING_FEE, freeShippingMinimum: 0 });
   const shippingFee = cart.length > 0 && (!shippingSettings.freeShippingMinimum || cartTotal < shippingSettings.freeShippingMinimum) ? shippingSettings.shippingFee : 0;
-  const orderTotal = cartTotal + shippingFee;
+  const discountAmount = appliedDiscount?.discountAmount || 0;
+  const orderTotal = Math.max(0, cartTotal + shippingFee - discountAmount);
   const navigate = useNavigate();
   const [submittedOrder, setSubmittedOrder] = useState(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState(null);
+  const [discountError, setDiscountError] = useState('');
+  const [checkingDiscount, setCheckingDiscount] = useState(false);
 
   usePageTitle('Checkout');
+
+  const applyDiscountCode = useCallback(async () => {
+    const code = discountCode.trim().toUpperCase();
+    if (!code) return;
+    setCheckingDiscount(true);
+    setDiscountError('');
+    setAppliedDiscount(null);
+    try {
+      const response = await fetch(`/api/validate-discount?code=${encodeURIComponent(code)}&subtotal=${cartTotal}`);
+      const data = await response.json();
+      if (!data.valid) {
+        setDiscountError(data.error || 'Invalid code');
+      } else {
+        setAppliedDiscount(data);
+      }
+    } catch {
+      setDiscountError('Could not validate code. Try again.');
+    } finally {
+      setCheckingDiscount(false);
+    }
+  }, [discountCode, cartTotal]);
+
+  const removeDiscount = useCallback(() => {
+    setDiscountCode('');
+    setAppliedDiscount(null);
+    setDiscountError('');
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -172,6 +204,7 @@ export default function Checkout() {
         variantId: item.variant?.id || null,
         quantity: item.quantity,
       })),
+      discountCode: appliedDiscount?.code || '',
     };
 
     try {
@@ -251,24 +284,57 @@ export default function Checkout() {
         <section className="rounded-3xl border border-white/10 bg-[#111] p-6 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] sm:p-8 lg:sticky lg:top-28">
           <h2 className="text-xl font-heading font-[850] text-white mb-4 uppercase tracking-wider">Your order</h2>
           <OrderItems cart={cart} subtotal={cartTotal} shippingFee={shippingFee} total={orderTotal} />
-          <div className="mt-5 border-t border-gray-100 pt-5 grid gap-3">
-            <div className="flex items-center justify-between text-sm font-bold text-gray-500">
+
+          <div className="mt-4 border-t border-white/10 pt-4">
+            {appliedDiscount ? (
+              <div className="flex items-center justify-between rounded-xl bg-brand-pink/10 px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-brand-pink uppercase">{appliedDiscount.code}</span>
+                  <span className="text-xs text-gray-400">(-Rs. {appliedDiscount.discountAmount})</span>
+                </div>
+                <button type="button" onClick={removeDiscount} className="text-gray-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors">Remove</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                  placeholder="Discount code"
+                  className="flex-1 rounded-xl border border-white/20 bg-[#1a1a1a] px-3 py-2.5 text-sm text-white outline-none transition focus:border-brand-pink placeholder:text-gray-500 uppercase"
+                />
+                <button type="button" onClick={applyDiscountCode} disabled={!discountCode.trim() || checkingDiscount} className="rounded-xl bg-brand-pink px-4 py-2.5 text-sm font-bold text-black transition hover:bg-brand-pink/90 disabled:opacity-50 whitespace-nowrap">
+                  {checkingDiscount ? '...' : 'Apply'}
+                </button>
+              </div>
+            )}
+            {discountError ? <p className="mt-2 text-xs font-semibold text-red-400">{discountError}</p> : null}
+          </div>
+
+          <div className="mt-4 border-t border-white/10 pt-4 grid gap-2.5">
+            <div className="flex items-center justify-between text-sm font-bold text-gray-400">
               <span>Subtotal</span>
               <span>Rs. {cartTotal}</span>
             </div>
-            <div className="flex items-center justify-between text-sm font-bold text-gray-500">
+            <div className="flex items-center justify-between text-sm font-bold text-gray-400">
               <span>Shipping</span>
               <span>{shippingFee === 0 ? 'Free' : `Rs. ${shippingFee}`}</span>
             </div>
-            {shippingSettings.freeShippingMinimum > 0 && cartTotal < shippingSettings.freeShippingMinimum ? (
-              <p className="text-xs font-semibold text-gray-400">Free shipping over Rs. {shippingSettings.freeShippingMinimum}</p>
+            {discountAmount > 0 ? (
+              <div className="flex items-center justify-between text-sm font-bold text-brand-pink">
+                <span>Discount</span>
+                <span>-Rs. {discountAmount}</span>
+              </div>
             ) : null}
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-heading font-[850] uppercase tracking-widest text-gray-900">Total</span>
+            {shippingSettings.freeShippingMinimum > 0 && cartTotal < shippingSettings.freeShippingMinimum ? (
+              <p className="text-xs font-semibold text-gray-500">Free shipping over Rs. {shippingSettings.freeShippingMinimum}</p>
+            ) : null}
+            <div className="flex items-center justify-between pt-2 border-t border-white/10">
+              <span className="text-lg font-heading font-[850] uppercase tracking-widest text-white">Total</span>
               <span className="text-2xl font-bold text-brand-pink">Rs. {orderTotal}</span>
             </div>
           </div>
-          <button type="submit" disabled={isSubmitting} className="mt-6 w-full rounded-xl bg-gradient-to-r from-brand-pink to-brand-coral px-4 py-4 text-base font-bold uppercase tracking-widest text-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl disabled:opacity-60 disabled:hover:translate-y-0">
+          <button type="submit" disabled={isSubmitting} className="mt-6 w-full rounded-xl bg-gradient-to-r from-brand-pink to-brand-coral px-4 py-4 text-base font-bold uppercase tracking-widest text-black shadow-lg transition hover:-translate-y-1 hover:shadow-xl disabled:opacity-60 disabled:hover:translate-y-0">
             {isSubmitting ? 'Placing...' : 'Place order'}
           </button>
         </section>

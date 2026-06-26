@@ -18,6 +18,7 @@ const Sale = lazy(() => import('./pages/Sale'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
+const WishlistPage = lazy(() => import('./pages/WishlistPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const FAQ = lazy(() => import('./pages/InfoPages').then((m) => ({ default: m.FAQ })));
 const About = lazy(() => import('./pages/InfoPages').then((m) => ({ default: m.About })));
@@ -69,6 +70,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="shipping" element={<LazyRoute><Shipping /></LazyRoute>} />
             <Route path="returns" element={<LazyRoute><Returns /></LazyRoute>} />
             <Route path="privacy" element={<LazyRoute><Privacy /></LazyRoute>} />
+            <Route path="wishlist" element={<LazyRoute><WishlistPage /></LazyRoute>} />
             <Route path="*" element={<LazyRoute><NotFound /></LazyRoute>} />
           </Route>
         </Routes>
