@@ -49,6 +49,13 @@ export function InfoPage({ type }) {
   );
 }
 
+export function FAQ() { return <InfoPage type="about" />; }
+export function About() { return <InfoPage type="about" />; }
+export function Terms() { return <InfoPage type="terms" />; }
+export function Shipping() { return <InfoPage type="shipping" />; }
+export function Returns() { return <InfoPage type="returns" />; }
+export function Privacy() { return <InfoPage type="privacy" />; }
+
 export function ContactPage() {
   usePageTitle('Contact');
   return (

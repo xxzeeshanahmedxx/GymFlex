@@ -19,10 +19,13 @@ const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
 const NotFound = lazy(() => import('./pages/NotFound'));
-const FAQ = lazy(() => import('./pages/InfoPages').then((module) => ({ default: module.FAQ })));
-const About = lazy(() => import('./pages/InfoPages').then((module) => ({ default: module.About })));
-const Contact = lazy(() => import('./pages/InfoPages').then((module) => ({ default: module.Contact })));
-const Terms = lazy(() => import('./pages/InfoPages').then((module) => ({ default: module.Terms })));
+const FAQ = lazy(() => import('./pages/InfoPages').then((m) => ({ default: m.FAQ })));
+const About = lazy(() => import('./pages/InfoPages').then((m) => ({ default: m.About })));
+const Contact = lazy(() => import('./pages/InfoPages').then((m) => ({ default: m.ContactPage })));
+const Terms = lazy(() => import('./pages/InfoPages').then((m) => ({ default: m.Terms })));
+const Shipping = lazy(() => import('./pages/InfoPages').then((m) => ({ default: m.Shipping })));
+const Returns = lazy(() => import('./pages/InfoPages').then((m) => ({ default: m.Returns })));
+const Privacy = lazy(() => import('./pages/InfoPages').then((m) => ({ default: m.Privacy })));
 
 function RouteFallback() {
   return <StoreLoadingSpinner className="min-h-[55vh]" />;
@@ -63,6 +66,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="about" element={<LazyRoute><About /></LazyRoute>} />
             <Route path="contact" element={<LazyRoute><Contact /></LazyRoute>} />
             <Route path="terms" element={<LazyRoute><Terms /></LazyRoute>} />
+            <Route path="shipping" element={<LazyRoute><Shipping /></LazyRoute>} />
+            <Route path="returns" element={<LazyRoute><Returns /></LazyRoute>} />
+            <Route path="privacy" element={<LazyRoute><Privacy /></LazyRoute>} />
             <Route path="*" element={<LazyRoute><NotFound /></LazyRoute>} />
           </Route>
         </Routes>

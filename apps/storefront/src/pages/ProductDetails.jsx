@@ -249,7 +249,7 @@ export default function ProductDetails() {
   const [error, setError] = useState('');
   const [relatedProducts, setRelatedProducts] = useState([]);
 
-  usePageTitle(product ? product.name : 'Product');
+  usePageTitle(product ? product.name : 'Product', product?.description);
 
   useEffect(() => {
     let cancelled = false;

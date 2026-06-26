@@ -25,7 +25,7 @@ export async function onRequestGet(context) {
     return error('Product not found', 404);
   }
 
-  const variants = await context.env.STORE_DB.prepare('SELECT * FROM product_variants WHERE product_id = ? AND COALESCE(is_active, 1) = 1 ORDER BY sort_order ASC, created_at ASC').bind(row.id).all();
+  const variants = await context.env.STORE_DB.prepare('SELECT * FROM product_variants WHERE product_id = ? ORDER BY sort_order ASC, created_at ASC').bind(row.id).all();
   const images = await context.env.STORE_DB.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY is_primary DESC, sort_order ASC, created_at ASC').bind(row.id).all();
 
   return cacheJson({
