@@ -30,7 +30,9 @@ export async function onRequestGet(context) {
   const variants = await context.env.STORE_DB.prepare('SELECT * FROM product_variants WHERE product_id = ? ORDER BY sort_order ASC, created_at ASC').bind(row.id).all();
   const images = await context.env.STORE_DB.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY is_primary DESC, sort_order ASC, created_at ASC').bind(row.id).all();
   const lookRows = await context.env.STORE_DB.prepare(`
-    SELECT lp.*, p.name, p.slug, p.price, p.sale_price, p.on_sale,
+    SELECT lp.*, p.name, p.slug, p.price, p.sale_price, p.on_sale, p.is_preorder, p.preorder_release_date, p.sale_ends_at, p.video_url, p.meta_title, p.meta_description,
+      (SELECT ROUND(AVG(rating), 1) FROM reviews WHERE product_id = p.id AND is_approved = 1) AS avg_rating,
+      (SELECT COUNT(*) FROM reviews WHERE product_id = p.id AND is_approved = 1) AS review_count,
       (SELECT cdn_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, sort_order ASC, created_at ASC LIMIT 1) AS primary_image_url
     FROM look_products lp
     JOIN products p ON p.id = lp.linked_product_id

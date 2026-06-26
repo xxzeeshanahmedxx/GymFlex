@@ -49,6 +49,11 @@ export async function onRequestPost(context) {
   const isActive = body?.is_active !== false;
   const isFeatured = Boolean(body?.is_featured);
   const sortOrder = Number(body?.sort_order || 0);
+  const videoUrl = String(body?.video_url || '').trim();
+  const metaTitle = String(body?.meta_title || '').trim();
+  const metaDescription = String(body?.meta_description || '').trim();
+  const isPreorder = Boolean(body?.is_preorder);
+  const preorderReleaseDate = String(body?.preorder_release_date || '').trim() || null;
   const variants = normalizeVariants(body?.variants || []);
 
   if (!name || !slug || !categoryId || !Number.isFinite(price)) {
@@ -58,12 +63,12 @@ export async function onRequestPost(context) {
   const productId = crypto.randomUUID();
   const statements = [
     context.env.STORE_DB
-      .prepare('INSERT INTO products (id, category_id, name, slug, description, price, sale_price, on_sale, is_active, is_featured, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(productId, categoryId, name, slug, description, price, salePrice, onSale ? 1 : 0, isActive ? 1 : 0, isFeatured ? 1 : 0, sortOrder),
+      .prepare('INSERT INTO products (id, category_id, name, slug, description, price, sale_price, on_sale, is_active, is_featured, sort_order, video_url, meta_title, meta_description, is_preorder, preorder_release_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(productId, categoryId, name, slug, description, price, salePrice, onSale ? 1 : 0, isActive ? 1 : 0, isFeatured ? 1 : 0, sortOrder, videoUrl, metaTitle, metaDescription, isPreorder ? 1 : 0, preorderReleaseDate),
     ...variants.map((variant) =>
       context.env.STORE_DB
-        .prepare('INSERT INTO product_variants (id, product_id, type, name, image_url, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)')
-        .bind(variant.id, productId, variant.type, variant.name, variant.image_url, variant.is_active ? 1 : 0, variant.sort_order),
+        .prepare('INSERT INTO product_variants (id, product_id, type, name, image_url, is_active, sort_order, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+        .bind(variant.id, productId, variant.type, variant.name, variant.image_url, variant.is_active ? 1 : 0, variant.sort_order, variant.stock),
     ),
   ];
 

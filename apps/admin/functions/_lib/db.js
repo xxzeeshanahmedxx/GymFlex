@@ -45,6 +45,11 @@ export function normalizeProductRow(row) {
     primary_image_url: row.primary_image_url || null,
     image_count: Number(row.image_count || 0),
     variant_count: Number(row.variant_count || 0),
+    video_url: row.video_url || '',
+    meta_title: row.meta_title || '',
+    meta_description: row.meta_description || '',
+    is_preorder: Boolean(row.is_preorder),
+    preorder_release_date: row.preorder_release_date || null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -60,6 +65,7 @@ export function normalizeVariant(row) {
     image_url: row.image_url || '',
     is_active: Boolean(row.is_active ?? 1),
     sort_order: Number(row.sort_order || 0),
+    stock: Number(row.stock ?? 0),
   };
 }
 

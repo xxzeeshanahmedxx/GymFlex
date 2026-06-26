@@ -16,13 +16,13 @@ export async function onRequestPost(context) {
   const newSlug = `${slugify(source.name)}-copy-${Date.now()}`;
 
   await context.env.STORE_DB.prepare(`
-    INSERT INTO products (id, category_id, name, slug, description, price, sale_price, on_sale, is_active, is_featured, sort_order, video_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?)
-  `).bind(newId, source.category_id, `${source.name} (Copy)`, newSlug, source.description || '', source.price, source.sale_price, source.on_sale ? 1 : 0, source.video_url || '').run();
+    INSERT INTO products (id, category_id, name, slug, description, price, sale_price, on_sale, is_active, is_featured, sort_order, video_url, meta_title, meta_description, is_preorder, preorder_release_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?, ?, ?, ?, ?)
+  `).bind(newId, source.category_id, `${source.name} (Copy)`, newSlug, source.description || '', source.price, source.sale_price, source.on_sale ? 1 : 0, source.video_url || '', source.meta_title || '', source.meta_description || '', source.is_preorder ? 1 : 0, source.preorder_release_date || null).run();
 
   const variants = await context.env.STORE_DB.prepare('SELECT * FROM product_variants WHERE product_id = ?').bind(sourceId).all();
   const variantStatements = (variants.results || []).map((v) =>
-    context.env.STORE_DB.prepare('INSERT INTO product_variants (id, product_id, type, name, image_url, sort_order) VALUES (?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(), newId, v.type, v.name, v.image_url || '', v.sort_order || 0),
+    context.env.STORE_DB.prepare('INSERT INTO product_variants (id, product_id, type, name, image_url, is_active, sort_order, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(), newId, v.type, v.name, v.image_url || '', v.is_active ?? 1, v.sort_order || 0, v.stock ?? 0),
   );
 
   const images = await context.env.STORE_DB.prepare('SELECT * FROM product_images WHERE product_id = ?').bind(sourceId).all();

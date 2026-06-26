@@ -34,6 +34,8 @@ export function normalizeProduct(row) {
     avg_rating: row.avg_rating ? Number(row.avg_rating) : 0,
     review_count: Number(row.review_count || 0),
     sale_ends_at: row.sale_ends_at || null,
+    is_preorder: Boolean(row.is_preorder),
+    preorder_release_date: row.preorder_release_date || null,
   };
 }
 

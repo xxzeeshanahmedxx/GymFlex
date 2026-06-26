@@ -116,13 +116,6 @@ function OrderItems({ cart, subtotal, shippingFee, total }) {
 export default function Checkout() {
   const { cart, cartTotal, clearCart } = useShop();
   const [shippingSettings, setShippingSettings] = useState({ shippingFee: DEFAULT_SHIPPING_FEE, freeShippingMinimum: 0, taxRate: 0 });
-  const shippingFee = cart.length > 0 && (!shippingSettings.freeShippingMinimum || cartTotal < shippingSettings.freeShippingMinimum) ? shippingSettings.shippingFee : 0;
-  const discountAmount = appliedDiscount?.discountAmount || 0;
-  const giftCardAmount = appliedGiftCard ? Math.min(appliedGiftCard.balance, Math.max(0, cartTotal - discountAmount)) : 0;
-  const afterDiscount = Math.max(0, cartTotal - discountAmount - giftCardAmount);
-  const taxAmount = Math.round(afterDiscount * (shippingSettings.taxRate || 0) / 100);
-  const orderTotal = Math.max(0, afterDiscount + shippingFee + taxAmount);
-  const navigate = useNavigate();
   const [submittedOrder, setSubmittedOrder] = useState(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,6 +129,14 @@ export default function Checkout() {
   const [appliedGiftCard, setAppliedGiftCard] = useState(null);
   const [giftCardError, setGiftCardError] = useState('');
   const [checkingGiftCard, setCheckingGiftCard] = useState(false);
+
+  const shippingFee = cart.length > 0 && (!shippingSettings.freeShippingMinimum || cartTotal < shippingSettings.freeShippingMinimum) ? shippingSettings.shippingFee : 0;
+  const discountAmount = appliedDiscount?.discountAmount || 0;
+  const giftCardAmount = appliedGiftCard ? Math.min(appliedGiftCard.balance, Math.max(0, cartTotal - discountAmount)) : 0;
+  const afterDiscount = Math.max(0, cartTotal - discountAmount - giftCardAmount);
+  const taxAmount = Math.round(afterDiscount * (shippingSettings.taxRate || 0) / 100);
+  const orderTotal = Math.max(0, afterDiscount + shippingFee + taxAmount);
+  const navigate = useNavigate();
 
   usePageTitle('Checkout');
 
@@ -321,7 +322,7 @@ export default function Checkout() {
             </div>
 
             <div>
-              <label for="address" className={labelClassName}>Address</label>
+              <label htmlFor="address" className={labelClassName}>Address</label>
               <textarea id="address" name="address" rows="4" minLength={8} required className={inputClassName} />
             </div>
             {savedAddresses.length > 0 ? (
