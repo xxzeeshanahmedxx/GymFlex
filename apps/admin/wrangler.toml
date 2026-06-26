@@ -4,12 +4,12 @@ compatibility_date = "2026-06-22"
 
 [[kv_namespaces]]
 binding = "STORE_KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "03a00ee02243453f8b4824fdf53f5505"
 
 [[d1_databases]]
 binding = "STORE_DB"
 database_name = "gymflex_d1"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "c51412b2-c1a5-4201-bf9a-a0f4d961e6eb"
 
 [[r2_buckets]]
 binding = "STORE_BUCKET"
