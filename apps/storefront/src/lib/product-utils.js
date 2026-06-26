@@ -55,7 +55,7 @@ export function normalizeApiVariant(variant) {
   };
 }
 
-export function normalizeApiProduct(product, variants = [], images = []) {
+export function normalizeApiProduct(product, variants = [], images = [], lookProducts = []) {
   return {
     id: product.id,
     name: product.name,
@@ -70,7 +70,13 @@ export function normalizeApiProduct(product, variants = [], images = []) {
     isFeatured: Boolean(product.is_featured ?? product.isFeatured),
     sortOrder: Number(product.sort_order || 0),
     primaryImageUrl: product.primary_image_url || product.primaryImageUrl || null,
+    video_url: product.video_url || '',
+    meta_title: product.meta_title || '',
+    meta_description: product.meta_description || '',
+    avg_rating: product.avg_rating ? Number(product.avg_rating) : 0,
+    review_count: Number(product.review_count || 0),
     variants: variants.map(normalizeApiVariant),
     images: images.map(normalizeApiImage),
+    lookProducts: lookProducts.map(normalizeApiProduct),
   };
 }

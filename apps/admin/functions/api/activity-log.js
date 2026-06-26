@@ -1,0 +1,10 @@
+import { requireUser } from '../_lib/auth';
+import { json } from '../_lib/http';
+
+export async function onRequestGet(context) {
+  const user = await requireUser(context);
+  if (user instanceof Response) return user;
+
+  const rows = await context.env.STORE_DB.prepare('SELECT * FROM activity_log ORDER BY created_at DESC LIMIT 200').all();
+  return json({ entries: rows.results || [] });
+}

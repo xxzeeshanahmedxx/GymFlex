@@ -205,6 +205,7 @@ export default function Checkout() {
         quantity: item.quantity,
       })),
       discountCode: appliedDiscount?.code || '',
+      notes: formData.get('notes'),
     };
 
     try {
@@ -273,8 +274,12 @@ export default function Checkout() {
             </div>
 
             <div>
-              <label htmlFor="address" className={labelClassName}>Address</label>
+              <label for="address" className={labelClassName}>Address</label>
               <textarea id="address" name="address" rows="4" minLength={8} required className={inputClassName} />
+            </div>
+            <div>
+              <label htmlFor="notes" className={labelClassName}>Order notes (optional)</label>
+              <textarea id="notes" name="notes" rows="3" className={inputClassName} placeholder="Delivery instructions, landmark, etc." />
             </div>
           </div>
 

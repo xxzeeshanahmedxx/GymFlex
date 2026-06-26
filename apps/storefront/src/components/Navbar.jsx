@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Menu, ShoppingBag, X } from 'lucide-react';
+import { Heart, Menu, Moon, Ruler, Search, ShoppingBag, Sun, X } from 'lucide-react';
 import { useShop } from '../context/useShop';
 import { fetchCategories, fetchHomepageSettings } from '../lib/storefront-api';
+import FitFinderModal from './FitFinderModal';
 
 const fallbackNavigation = [
   { label: 'Shop All', to: '/shop' },
@@ -43,9 +44,10 @@ function CartButton({ count, onClick }) {
 }
 
 export default function Navbar() {
-  const { cartCount, wishlist, setIsCartOpen } = useShop();
+  const { cartCount, wishlist, theme, toggleTheme, setIsCartOpen } = useShop();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [navigation, setNavigation] = useState(fallbackNavigation);
+  const [showFitFinder, setShowFitFinder] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +81,12 @@ export default function Navbar() {
             </div>
 
             <div className="w-1/4 sm:w-1/3 flex justify-end items-center space-x-3 sm:space-x-6 pr-0 sm:pr-8">
+              <Link to="/search" className="text-white hover:text-brand-pink transition-colors p-2" aria-label="Search">
+                <Search className="w-5 h-5 sm:w-6 sm:h-6" />
+              </Link>
+              <button onClick={toggleTheme} className="text-white hover:text-brand-pink transition-colors p-2 hidden sm:inline-flex" aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+                {theme === 'dark' ? <Sun className="w-5 h-5 sm:w-6 sm:h-6" /> : <Moon className="w-5 h-5 sm:w-6 sm:h-6" />}
+              </button>
               <Link to="/wishlist" className="text-white hover:text-brand-pink transition-colors relative" aria-label="Wishlist">
                 <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${wishlist.length > 0 ? 'text-brand-pink' : ''}`} />
                 {wishlist.length > 0 ? <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-brand-pink text-black text-[9px] font-bold px-1 leading-none">{wishlist.length}</span> : null}
@@ -89,6 +97,10 @@ export default function Navbar() {
 
           <div className="hidden sm:flex justify-center space-x-8 pb-4 mt-1">
             {navigation.map((item) => <NavigationLink key={item.to} item={item} />)}
+            <button onClick={() => setShowFitFinder(true)} className={`${navLinkClassName} !text-brand-pink hover:!text-brand-coral`}>
+              Find My Fit
+              <span className={`${underlineClassName} !bg-brand-coral`}></span>
+            </button>
           </div>
         </div>
       </nav>
@@ -105,6 +117,7 @@ export default function Navbar() {
           </nav>
         </aside>
       </div>
+      {showFitFinder ? <FitFinderModal onClose={() => setShowFitFinder(false)} /> : null}
     </>
   );
 }

@@ -1,0 +1,2 @@
+ALTER TABLE products ADD COLUMN is_preorder INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE products ADD COLUMN preorder_release_date TEXT DEFAULT NULL;

@@ -1,0 +1,20 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS bundles (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  description TEXT DEFAULT '',
+  price INTEGER NOT NULL,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS bundle_items (
+  id TEXT PRIMARY KEY,
+  bundle_id TEXT NOT NULL,
+  product_id TEXT NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  FOREIGN KEY (bundle_id) REFERENCES bundles(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);

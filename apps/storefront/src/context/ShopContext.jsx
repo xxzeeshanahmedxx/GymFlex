@@ -53,7 +53,7 @@ export function ShopProvider({ children }) {
   const addRecentlyViewed = useCallback((product) => {
     setRecentlyViewed((currentItems) => {
       const itemsWithoutCurrentProduct = currentItems.filter((item) => item.id !== product.id);
-      return [product, ...itemsWithoutCurrentProduct].slice(0, 4);
+      return [product, ...itemsWithoutCurrentProduct].slice(0, 8);
     });
   }, [setRecentlyViewed]);
 
@@ -68,6 +68,24 @@ export function ShopProvider({ children }) {
   const isInWishlist = useCallback((productId) => {
     return wishlist.some((item) => item.id === productId);
   }, [wishlist]);
+
+  const [theme, setTheme] = useLocalStorageState('theme', 'dark');
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, [setTheme]);
+
+  const [compareList, setCompareList] = useLocalStorageState('compareList', []);
+  const toggleCompare = useCallback((product) => {
+    setCompareList((current) => {
+      const exists = current.some((item) => item.id === product.id);
+      if (exists) return current.filter((item) => item.id !== product.id);
+      if (current.length >= 4) return current;
+      return [...current, product];
+    });
+  }, [setCompareList]);
+  const clearCompare = useCallback(() => {
+    setCompareList([]);
+  }, [setCompareList]);
 
   const cartCount = useMemo(() => cart.reduce((total, item) => total + item.quantity, 0), [cart]);
   const cartTotal = useMemo(() => cart.reduce((total, item) => total + getEffectivePrice(item.product) * item.quantity, 0), [cart]);
@@ -84,6 +102,11 @@ export function ShopProvider({ children }) {
     wishlist,
     toggleWishlist,
     isInWishlist,
+    theme,
+    toggleTheme,
+    compareList,
+    toggleCompare,
+    clearCompare,
     isCartOpen,
     setIsCartOpen,
   }), [
@@ -98,6 +121,11 @@ export function ShopProvider({ children }) {
     wishlist,
     toggleWishlist,
     isInWishlist,
+    theme,
+    toggleTheme,
+    compareList,
+    toggleCompare,
+    clearCompare,
     isCartOpen,
   ]);
 

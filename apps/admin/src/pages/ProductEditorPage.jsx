@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, Star, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Copy, Plus, Star, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { useConfirm } from '../components/ConfirmProvider';
 import { get, post, put, del, api } from '../lib/api';
@@ -16,6 +16,9 @@ const emptyForm = {
   is_featured: false,
   sort_order: 0,
   variantType: 'Option',
+  video_url: '',
+  meta_title: '',
+  meta_description: '',
 };
 
 function slugify(value) {
@@ -47,6 +50,7 @@ function createVariantRow(overrides = {}) {
     name: overrides.name || '',
     image_url: overrides.image_url || overrides.imageUrl || '',
     is_active: overrides.is_active !== false && overrides.isActive !== false,
+    stock: overrides.stock ?? 0,
   };
 }
 
@@ -63,6 +67,7 @@ function variantsFromRows(rows = [], type = 'Option') {
       name: String(row.name || '').trim(),
       image_url: String(row.image_url || '').trim(),
       is_active: row.is_active !== false,
+      stock: Number(row.stock ?? 0),
       sort_order: index,
     }))
     .filter((variant) => variant.name);
@@ -174,6 +179,9 @@ export function ProductEditorPage() {
           is_featured: productData.product.is_featured,
           sort_order: productData.product.sort_order,
           variantType: productData.variants?.[0]?.type || 'Option',
+          video_url: productData.product.video_url || '',
+          meta_title: productData.product.meta_title || '',
+          meta_description: productData.product.meta_description || '',
         });
         setVariantRows(rowsFromVariants(productData.variants));
         await loadImages(productData.product.id);
@@ -231,6 +239,19 @@ export function ProductEditorPage() {
       setError(saveError.message || 'Failed to save product');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const duplicateProduct = async () => {
+    if (!id) return;
+    setError('');
+    setMessage('');
+    try {
+      const result = await post('/api/product-duplicate', { id });
+      setMessage('Product duplicated.');
+      navigate(`/products/${result.id}`);
+    } catch (dupError) {
+      setError(dupError.message || 'Failed to duplicate product');
     }
   };
 
@@ -339,7 +360,16 @@ export function ProductEditorPage() {
     <div className="page-stack">
       <PageHeader
         title={title}
-        actions={<Link className="button button-secondary" to="/products">Back to products</Link>}
+        actions={
+          <div className="row-actions">
+            {!isNew ? (
+              <button className="icon-action-link" type="button" onClick={duplicateProduct} aria-label="Duplicate product" title="Duplicate product">
+                <Copy size={16} />
+              </button>
+            ) : null}
+            <Link className="button button-secondary" to="/products">Back to products</Link>
+          </div>
+        }
       />
 
       {error ? <div className="error-box">{error}</div> : null}
@@ -391,6 +421,21 @@ export function ProductEditorPage() {
                 <textarea rows="5" value={form.description} onChange={(event) => handleChange('description', event.target.value)} />
               </label>
 
+              <label>
+                Video URL (YouTube embed URL)
+                <input value={form.video_url} onChange={(event) => handleChange('video_url', event.target.value)} placeholder="https://www.youtube.com/embed/..." />
+              </label>
+
+              <label>
+                Meta title (SEO)
+                <input value={form.meta_title} onChange={(event) => handleChange('meta_title', event.target.value)} placeholder="Custom page title for search engines" />
+              </label>
+
+              <label>
+                Meta description (SEO)
+                <textarea rows="2" value={form.meta_description} onChange={(event) => handleChange('meta_description', event.target.value)} placeholder="Custom description for search engines" />
+              </label>
+
               <section className="variant-manager">
                 <div className="variant-manager-head">
                   <label>
@@ -412,6 +457,7 @@ export function ProductEditorPage() {
                           <option key={image.id} value={image.cdn_url}>Image {imageIndex + 1}{image.is_primary ? ' cover' : ''}</option>
                         ))}
                       </select>
+                              <input type="number" min="0" value={row.stock ?? 0} onChange={(event) => updateVariantRow(row.id, 'stock', event.target.value)} placeholder="Stock" className="variant-stock-input" title="Stock quantity" />
                       <label className={`variant-stock-toggle ${row.is_active !== false ? 'active' : ''}`} title={row.is_active !== false ? 'Variant in stock' : 'Variant off'}>
                         <input type="checkbox" checked={row.is_active !== false} onChange={(event) => updateVariantRow(row.id, 'is_active', event.target.checked)} />
                         <span>{row.is_active !== false ? 'On' : 'Off'}</span>

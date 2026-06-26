@@ -1,13 +1,28 @@
 import { useState } from 'react';
-import { FolderKanban, LogOut, Package, Percent, RefreshCw, Settings, ShoppingBag } from 'lucide-react';
+import { BarChart3, Bell, Camera, Database, FileSpreadsheet, FolderKanban, Gift, HelpCircle, LogOut, Mail, MessageSquare, Package, Percent, RefreshCw, ScrollText, Settings, Shield, ShoppingBag, Star, TrendingUp } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const links = [
+  { to: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { to: '/products', label: 'Products', icon: Package },
   { to: '/orders', label: 'Orders', icon: ShoppingBag },
   { to: '/categories', label: 'Categories', icon: FolderKanban },
   { to: '/discounts', label: 'Discounts', icon: Percent },
+  { to: '/discount-analytics', label: 'Discount Analytics', icon: TrendingUp },
+  { to: '/reviews', label: 'Reviews', icon: MessageSquare },
+  { to: '/tiered-pricing', label: 'Tiered Pricing', icon: Star },
+  { to: '/loyalty', label: 'Loyalty', icon: Gift },
+  { to: '/activity-log', label: 'Activity Log', icon: ScrollText },
+  { to: '/shipping-rates', label: 'Shipping Rates', icon: Database },
+  { to: '/bulk-import', label: 'Import/Export', icon: FileSpreadsheet },
+  { to: '/faq', label: 'FAQ', icon: HelpCircle },
+  { to: '/gift-cards', label: 'Gift Cards', icon: Gift },
+  { to: '/bundles', label: 'Bundles', icon: FolderKanban },
+  { to: '/subscribers', label: 'Subscribers', icon: Mail },
+  { to: '/alerts', label: 'Alerts', icon: Bell },
+  { to: '/community-photos', label: 'Community', icon: Camera },
+  { to: '/maintenance', label: 'Maintenance', icon: Shield },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 

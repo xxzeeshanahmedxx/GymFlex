@@ -1,0 +1,9 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS stock_alerts (
+  id TEXT PRIMARY KEY,
+  variant_id TEXT NOT NULL,
+  email TEXT NOT NULL,
+  is_notified INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

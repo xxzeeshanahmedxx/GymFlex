@@ -1,16 +1,23 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Download, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, Save, Trash2, Truck } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { del, get, patch } from '../lib/api';
 import { downloadOrderPdf } from '../lib/orderPdf';
 
 const statuses = ['new', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+const callStatuses = ['not_needed', 'pending', 'confirmed', 'failed'];
+const itemStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 export function OrderDetailsPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [status, setStatus] = useState('new');
+  const [callStatus, setCallStatus] = useState('not_needed');
+  const [courierName, setCourierName] = useState('');
+  const [trackingUrl, setTrackingUrl] = useState('');
+  const [notes, setNotes] = useState('');
+  const [itemStatusesMap, setItemStatusesMap] = useState({});
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [pdfDownloading, setPdfDownloading] = useState(false);
@@ -20,6 +27,13 @@ export function OrderDetailsPage() {
       const payload = await get(`/api/order?id=${id}`);
       setData(payload);
       setStatus(payload.order.status);
+      setCallStatus(payload.order.call_status || 'not_needed');
+      setCourierName(payload.order.courier_name || '');
+      setTrackingUrl(payload.order.tracking_url || '');
+      setNotes(payload.order.notes || '');
+      const itemMap = {};
+      (payload.items || []).forEach((item) => { itemMap[item.id] = item.status || 'pending'; });
+      setItemStatusesMap(itemMap);
     } catch (loadError) {
       setError(loadError.message || 'Failed to load order');
     }
@@ -38,6 +52,31 @@ export function OrderDetailsPage() {
       await loadOrder();
     } catch (updateError) {
       setError(updateError.message || 'Failed to update status');
+    }
+  };
+
+  const saveOrderDetails = async () => {
+    setError('');
+    setMessage('');
+    try {
+      await patch(`/api/order?id=${id}`, { call_status: callStatus, courier_name: courierName, tracking_url: trackingUrl, notes });
+      setMessage('Order details saved.');
+      await loadOrder();
+    } catch (saveError) {
+      setError(saveError.message || 'Failed to save order details');
+    }
+  };
+
+  const saveItemStatuses = async () => {
+    setError('');
+    setMessage('');
+    try {
+      const items = Object.entries(itemStatusesMap).map(([itemId, itemStatus]) => ({ id: itemId, status: itemStatus }));
+      await patch(`/api/order?id=${id}`, { items });
+      setMessage('Item statuses updated.');
+      await loadOrder();
+    } catch (itemError) {
+      setError(itemError.message || 'Failed to update item statuses');
     }
   };
 
@@ -111,6 +150,16 @@ export function OrderDetailsPage() {
                       <strong>{item.product_name}</strong>
                       <span className="order-line-price">Rs. {item.unit_price}</span>
                       {item.variant_name ? <span className="order-line-variant">{item.variant_name}</span> : null}
+                      <div className="order-line-status">
+                        <span className="item-status-label">Status:</span>
+                        <select
+                          value={itemStatusesMap[item.id] || 'pending'}
+                          onChange={(e) => setItemStatusesMap((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                          className="item-status-select"
+                        >
+                          {itemStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
                     </div>
                     <div className="order-line-total">
                       <span>Total</span>
@@ -119,15 +168,45 @@ export function OrderDetailsPage() {
                   </article>
                 ))}
               </div>
+              <div className="panel-actions">
+                <button className="button button-compact" type="button" onClick={saveItemStatuses}><Save size={14} /> Save item statuses</button>
+              </div>
             </section>
 
             <section className="panel order-status-panel">
-              <div className="panel-header"><h2>Status</h2></div>
+              <div className="panel-header"><h2>Order status</h2></div>
               <div className="status-editor order-status-editor">
                 <select value={status} onChange={(event) => setStatus(event.target.value)}>
                   {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
                 </select>
                 <button className="icon-action-link" type="button" onClick={updateStatus} aria-label="Save status" title="Save status"><Save size={16} /></button>
+              </div>
+            </section>
+
+            <section className="panel">
+              <div className="panel-header"><h2>Delivery & tracking</h2></div>
+              <div className="field-grid two-column">
+                <label>
+                  Call status
+                  <select value={callStatus} onChange={(e) => setCallStatus(e.target.value)}>
+                    {callStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </label>
+                <label>
+                  Courier name
+                  <input value={courierName} onChange={(e) => setCourierName(e.target.value)} placeholder="e.g. Leopards, TCS, Trax" />
+                </label>
+                <label className="full-row">
+                  Tracking URL
+                  <input value={trackingUrl} onChange={(e) => setTrackingUrl(e.target.value)} placeholder="https://..." />
+                </label>
+                <label className="full-row">
+                  Order notes
+                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Customer delivery instructions" />
+                </label>
+              </div>
+              <div className="panel-actions">
+                <button className="button button-compact" type="button" onClick={saveOrderDetails}><Truck size={14} /> Save delivery details</button>
               </div>
             </section>
           </div>
@@ -141,6 +220,7 @@ export function OrderDetailsPage() {
               <div><span>Payment</span><strong>{data.order.payment_method}</strong></div>
               <div><span>Subtotal</span><strong>Rs. {data.order.subtotal}</strong></div>
               <div><span>Shipping</span><strong>Rs. {data.order.shipping_fee || 0}</strong></div>
+              {data.order.discount_amount > 0 ? <div><span>Discount</span><strong>-Rs. {data.order.discount_amount} {data.order.discount_code ? `(${data.order.discount_code})` : ''}</strong></div> : null}
               <div className="order-total-line"><span>Total</span><strong>Rs. {data.order.total}</strong></div>
             </div>
           </aside>

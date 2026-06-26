@@ -8,6 +8,21 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { DiscountsPage } from './pages/DiscountsPage';
+import { DiscountAnalyticsPage } from './pages/DiscountAnalyticsPage';
+import { ReviewsPage } from './pages/ReviewsPage';
+import { LoyaltyPage } from './pages/LoyaltyPage';
+import { TieredPricingPage } from './pages/TieredPricingPage';
+import { ActivityLogPage } from './pages/ActivityLogPage';
+import { ShippingRatesPage } from './pages/ShippingRatesPage';
+import { BulkImportPage } from './pages/BulkImportPage';
+import { MaintenancePage } from './pages/MaintenancePage';
+import { FaqPage } from './pages/FaqPage';
+import { GiftCardsPage } from './pages/GiftCardsPage';
+import { BundlesPage } from './pages/BundlesPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { SubscribersPage } from './pages/SubscribersPage';
+import { AlertsPage } from './pages/AlertsPage';
+import { CommunityPhotosPage } from './pages/CommunityPhotosPage';
 
 const ProductEditorPage = lazy(() => import('./pages/ProductEditorPage').then((module) => ({ default: module.ProductEditorPage })));
 const OrdersPage = lazy(() => import('./pages/OrdersPage').then((module) => ({ default: module.OrdersPage })));
@@ -33,7 +48,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<ProtectedRoute><AdminShell /></ProtectedRoute>}>
-          <Route index element={<Navigate to="/products" replace />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="products/new" element={<LazyPage><ProductEditorPage /></LazyPage>} />
@@ -41,6 +56,21 @@ export default function App() {
           <Route path="orders" element={<LazyPage><OrdersPage /></LazyPage>} />
           <Route path="orders/:id" element={<LazyPage><OrderDetailsPage /></LazyPage>} />
           <Route path="discounts" element={<LazyPage><DiscountsPage /></LazyPage>} />
+          <Route path="reviews" element={<ReviewsPage />} />
+          <Route path="discount-analytics" element={<LazyPage><DiscountAnalyticsPage /></LazyPage>} />
+          <Route path="loyalty" element={<LazyPage><LoyaltyPage /></LazyPage>} />
+          <Route path="tiered-pricing" element={<LazyPage><TieredPricingPage /></LazyPage>} />
+          <Route path="activity-log" element={<LazyPage><ActivityLogPage /></LazyPage>} />
+          <Route path="shipping-rates" element={<LazyPage><ShippingRatesPage /></LazyPage>} />
+          <Route path="bulk-import" element={<LazyPage><BulkImportPage /></LazyPage>} />
+          <Route path="maintenance" element={<LazyPage><MaintenancePage /></LazyPage>} />
+          <Route path="dashboard" element={<LazyPage><DashboardPage /></LazyPage>} />
+          <Route path="faq" element={<LazyPage><FaqPage /></LazyPage>} />
+          <Route path="gift-cards" element={<LazyPage><GiftCardsPage /></LazyPage>} />
+          <Route path="bundles" element={<LazyPage><BundlesPage /></LazyPage>} />
+          <Route path="subscribers" element={<LazyPage><SubscribersPage /></LazyPage>} />
+          <Route path="alerts" element={<LazyPage><AlertsPage /></LazyPage>} />
+          <Route path="community-photos" element={<LazyPage><CommunityPhotosPage /></LazyPage>} />
           <Route path="settings" element={<LazyPage><SettingsPage /></LazyPage>} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />

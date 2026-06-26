@@ -137,6 +137,7 @@ export default function Home() {
   const [categories, setCategories] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [saleProducts, setSaleProducts] = useState([]);
+  const [bestsellerProducts, setBestsellerProducts] = useState([]);
   const [collectionProducts, setCollectionProducts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -159,6 +160,7 @@ export default function Home() {
         setCategories(data.categories || []);
         setFeaturedProducts(data.featuredProducts || []);
         setSaleProducts(data.saleProducts || []);
+        setBestsellerProducts(data.bestsellerProducts || []);
         setCollectionProducts(data.collectionProducts || {});
       } catch (loadError) {
         if (!cancelled) setError(loadError.message || 'Failed to load the storefront.');
@@ -199,6 +201,15 @@ export default function Home() {
           {!loading && !error && featuredProducts.length === 0 ? <SectionState message="Featured products will appear here soon." /> : null}
         </div>
       </div>
+
+      {!loading && !error && bestsellerProducts.length > 0 ? (
+        <div className={`${sectionWidthClassName} reveal-section py-10 sm:py-12 w-full animate-fade-in-up border-b border-gray-200`}>
+          <SectionHeading eyebrow="Trending now" title="Best Sellers" />
+          <Carousel maxItems={6} centerThreshold={4} itemWidth="home-carousel-item w-[58%] sm:w-[46%] lg:w-[22.5%]">
+            {bestsellerProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+          </Carousel>
+        </div>
+      ) : null}
 
       {!loading && !error ? categories.map((category, index) => (
         <CollectionSection

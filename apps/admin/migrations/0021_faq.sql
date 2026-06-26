@@ -1,0 +1,11 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS faq_items (
+  id TEXT PRIMARY KEY,
+  category TEXT NOT NULL DEFAULT 'General',
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

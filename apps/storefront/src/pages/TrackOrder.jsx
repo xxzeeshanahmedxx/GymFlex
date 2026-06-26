@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PackageCheck, Search } from 'lucide-react';
+import { PackageCheck, Printer, Search } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const inputClassName = 'w-full rounded-2xl border border-white/20 bg-[#1a1a1a] px-4 py-3.5 font-semibold text-white outline-none transition focus:border-brand-pink focus:bg-[#222]';
@@ -78,7 +78,12 @@ export default function TrackOrder() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-green-400">Order</p>
-                <h2 className="mt-1 font-heading text-2xl font-[850] text-white">{order.orderNumber}</h2>
+                <div className="flex items-center gap-3 mt-1">
+                  <h2 className="font-heading text-2xl font-[850] text-white">{order.orderNumber}</h2>
+                  <button onClick={() => window.print()} className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors" aria-label="Print receipt">
+                    <Printer className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <span className="rounded-full bg-brand-pink px-4 py-2 text-xs font-bold uppercase tracking-widest text-black">
                 {statusLabels[order.status] || order.status}

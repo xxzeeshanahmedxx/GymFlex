@@ -72,20 +72,24 @@ export function CollectionPage({
   const [sortBy, setSortBy] = useState('featured');
   const [category, setCategory] = useState('');
   const [saleOnly, setSaleOnly] = useState(false);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredProducts = useMemo(() => {
     const filtered = filterProducts(products, {
       category,
       saleOnly,
+      minPrice,
+      maxPrice,
     });
 
     return sortProducts(filtered, sortBy);
-  }, [products, category, saleOnly, sortBy]);
+  }, [products, category, saleOnly, sortBy, minPrice, maxPrice]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [sortBy, category, saleOnly, products.length]);
+  }, [sortBy, category, saleOnly, minPrice, maxPrice, products.length]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
   const paginatedProducts = useMemo(() => {
@@ -93,12 +97,14 @@ export function CollectionPage({
     return filteredProducts.slice(startIndex, startIndex + pageSize);
   }, [filteredProducts, currentPage, pageSize]);
 
-  const hasActiveFilters = sortBy !== 'featured' || category || saleOnly;
+  const hasActiveFilters = sortBy !== 'featured' || category || saleOnly || minPrice || maxPrice;
 
   const resetFilters = () => {
     setSortBy('featured');
     setCategory('');
     setSaleOnly(false);
+    setMinPrice('');
+    setMaxPrice('');
     setCurrentPage(1);
   };
 
@@ -118,6 +124,10 @@ export function CollectionPage({
             saleOnly={saleOnly}
             onSaleOnlyChange={setSaleOnly}
             showSaleToggle={showSaleToggle}
+            minPrice={minPrice}
+            onMinPriceChange={setMinPrice}
+            maxPrice={maxPrice}
+            onMaxPriceChange={setMaxPrice}
             onResetFilters={resetFilters}
             hasActiveFilters={hasActiveFilters}
           />

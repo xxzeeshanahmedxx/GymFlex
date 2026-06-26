@@ -1,4 +1,5 @@
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChevronDown, Mail, MapPin, Phone } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const contactItems = [
@@ -49,7 +50,36 @@ export function InfoPage({ type }) {
   );
 }
 
-export function FAQ() { return <InfoPage type="about" />; }
+export function FAQ() {
+  usePageTitle('FAQ');
+  const [items, setItems] = useState([]);
+  const [openId, setOpenId] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/faq').then((r) => r.json()).then((data) => { if (!cancelled) setItems(data.items || []); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+  return (
+    <main className="flex-grow bg-white px-4 py-14 sm:py-20">
+      <section className="mx-auto max-w-3xl rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-10">
+        <p className="text-xs font-bold uppercase tracking-widest text-brand-pink">GymFlex</p>
+        <h1 className="mt-3 font-heading text-4xl font-[850] text-gray-900">FAQ</h1>
+        <div className="mt-8 space-y-3">
+          {items.length === 0 ? <p className="text-gray-500">No FAQs yet.</p>
+            : items.map((item) => (
+              <div key={item.id} className="border border-gray-100 rounded-2xl overflow-hidden">
+                <button onClick={() => setOpenId(openId === item.id ? null : item.id)} className="flex w-full items-center justify-between px-5 py-4 text-left font-bold text-gray-900 hover:bg-gray-50 transition-colors">
+                  <span>{item.question}</span>
+                  <ChevronDown size={18} className={`text-gray-400 transition-transform ${openId === item.id ? 'rotate-180' : ''}`} />
+                </button>
+                {openId === item.id ? <div className="px-5 pb-4 text-gray-600 leading-relaxed">{item.answer}</div> : null}
+              </div>
+            ))}
+        </div>
+      </section>
+    </main>
+  );
+}
 export function About() { return <InfoPage type="about" />; }
 export function Terms() { return <InfoPage type="terms" />; }
 export function Shipping() { return <InfoPage type="shipping" />; }

@@ -42,7 +42,7 @@ export async function fetchCatalog(options = {}) {
 
 export async function fetchProductById(id) {
   const data = await fetchJson(`/api/product?id=${encodeURIComponent(id)}`);
-  return normalizeApiProduct(data.product, data.variants || [], data.images || []);
+  return normalizeApiProduct(data.product, data.variants || [], data.images || [], data.lookProducts || []);
 }
 
 export async function fetchHomepageSettings() {

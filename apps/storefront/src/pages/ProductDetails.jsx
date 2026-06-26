@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, RotateCcw, ShieldCheck, ShoppingCart, Truck } from 'lucide-react';
+import { Bell, ChevronRight, Clock, RotateCcw, ShieldCheck, ShoppingCart, Truck } from 'lucide-react';
 import { Carousel } from '../components/Carousel';
 import { ProductCard } from '../components/ProductCard';
 import { SectionState } from '../components/SectionState';
 import { ProductDetailsSkeleton } from '../components/Skeletons';
+import ShareButton from '../components/ShareButton';
+import SizeGuideModal from '../components/SizeGuideModal';
+import { StarRatingDisplay, StarRatingInput } from '../components/StarRating';
+import CountdownTimer from '../components/CountdownTimer';
 import { useShop } from '../context/useShop';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { fetchCatalog, fetchProductById } from '../lib/storefront-api';
 import { getEffectivePrice, getProductCategoryName, getProductCategorySlug, getProductPrimaryImage } from '../lib/product-utils';
+import { productSchema } from '../lib/schema';
 
 function Breadcrumbs({ product }) {
   const categorySlug = getProductCategorySlug(product);
@@ -73,6 +78,51 @@ function ProductVisual({ product, selectedImage, onSelectImage }) {
   );
 }
 
+function BulkPricingTable({ product }) {
+  const [tiers, setTiers] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/tiered-pricing?productId=${product.id}`, { headers: { accept: 'application/json' } })
+      .then((r) => r.json())
+      .then((data) => { if (!cancelled) setTiers(data.tiers || []); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [product.id]);
+
+  if (tiers.length === 0) return null;
+
+  return (
+    <div className="mt-6 pt-4 border-t border-white/10">
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Bulk Pricing</p>
+      <div className="overflow-hidden rounded-xl border border-white/10">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-white/5">
+              <th className="px-3 py-2 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Quantity</th>
+              <th className="px-3 py-2 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Discount</th>
+              <th className="px-3 py-2 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Unit Price</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {tiers.map((tier) => {
+              const basePrice = getEffectivePrice(product);
+              const discountedPrice = Math.round(basePrice * (1 - tier.discount_percent / 100));
+              return (
+                <tr key={tier.id} className="hover:bg-white/5">
+                  <td className="px-3 py-2 text-white font-bold">{tier.min_quantity}+</td>
+                  <td className="px-3 py-2 text-brand-pink font-bold">{tier.discount_percent}% off</td>
+                  <td className="px-3 py-2 text-right text-white font-bold">Rs. {discountedPrice}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function PriceBlock({ product }) {
   const effectivePrice = getEffectivePrice(product);
   const salePrice = product?.salePrice ?? product?.sale_price;
@@ -126,11 +176,135 @@ function TrustItem({ icon: Icon, text }) {
   );
 }
 
+function ReviewsSection({ product }) {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [formRating, setFormRating] = useState(5);
+  const [formTitle, setFormTitle] = useState('');
+  const [formBody, setFormBody] = useState('');
+  const [formAuthor, setFormAuthor] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/reviews?productId=${product.id}`, { headers: { accept: 'application/json' } })
+      .then((r) => r.json())
+      .then((data) => { if (!cancelled) setReviews(data.reviews || []); })
+      .catch(() => { if (!cancelled) setReviews([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [product.id]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSubmitError('');
+    setSubmitSuccess(false);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ productId: product.id, rating: formRating, title: formTitle, body: formBody, authorName: formAuthor || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit review');
+      setSubmitSuccess(true);
+      setFormTitle('');
+      setFormBody('');
+      setFormAuthor('');
+      setShowForm(false);
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const avgRating = product.avg_rating || 0;
+  const reviewCount = product.review_count || reviews.length;
+
+  return (
+    <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full border-t border-white/10 mt-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-heading font-[850] text-white">Reviews</h2>
+          {reviewCount > 0 ? (
+            <div className="flex items-center gap-2 mt-1">
+              <StarRatingDisplay rating={Math.round(avgRating)} />
+              <span className="text-sm text-gray-400">{avgRating} · {reviewCount} review{reviewCount !== 1 ? 's' : ''}</span>
+            </div>
+          ) : null}
+        </div>
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 rounded-xl bg-brand-pink text-black text-sm font-bold uppercase tracking-widest hover:bg-brand-green-dark transition-colors">
+          {showForm ? 'Cancel' : 'Write a review'}
+        </button>
+      </div>
+
+      {showForm ? (
+        <form onSubmit={handleSubmit} className="mb-8 rounded-2xl border border-white/10 bg-[#1a1a1a] p-6 space-y-4">
+          <div>
+            <p className="text-sm font-bold text-gray-400 mb-2">Your rating</p>
+            <StarRatingInput rating={formRating} onChange={setFormRating} />
+          </div>
+          <label className="text-sm font-bold text-gray-400">
+            Title (optional)
+            <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} className="w-full mt-1 rounded-xl border border-white/20 bg-[#111] px-4 py-2.5 text-white outline-none focus:border-brand-pink" placeholder="Great product!" />
+          </label>
+          <label className="text-sm font-bold text-gray-400">
+            Review (optional)
+            <textarea value={formBody} onChange={(e) => setFormBody(e.target.value)} rows="3" className="w-full mt-1 rounded-xl border border-white/20 bg-[#111] px-4 py-2.5 text-white outline-none focus:border-brand-pink" placeholder="Share your experience..." />
+          </label>
+          <label className="text-sm font-bold text-gray-400">
+            Your name (optional)
+            <input value={formAuthor} onChange={(e) => setFormAuthor(e.target.value)} className="w-full mt-1 rounded-xl border border-white/20 bg-[#111] px-4 py-2.5 text-white outline-none focus:border-brand-pink" placeholder="Anonymous" />
+          </label>
+          {submitError ? <div className="text-red-400 text-sm">{submitError}</div> : null}
+          {submitSuccess ? <div className="text-green-400 text-sm">Review submitted! It will appear after approval.</div> : null}
+          <button type="submit" disabled={submitting} className="px-6 py-2.5 rounded-xl bg-brand-pink text-black text-sm font-bold uppercase tracking-widest hover:bg-brand-green-dark transition-colors disabled:opacity-50">
+            {submitting ? 'Submitting...' : 'Submit review'}
+          </button>
+        </form>
+      ) : null}
+
+      {loading ? <div className="text-gray-400 text-sm">Loading reviews...</div> : null}
+
+      {!loading && reviews.length === 0 ? (
+        <p className="text-gray-500">No reviews yet. Be the first!</p>
+      ) : null}
+
+      {!loading && reviews.length > 0 ? (
+        <div className="space-y-4">
+          {reviews.map((review) => (
+            <div key={review.id} className="rounded-2xl border border-white/10 bg-[#1a1a1a] p-5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <StarRatingDisplay rating={review.rating} size={14} />
+                  <span className="font-bold text-white text-sm">{review.author_name}</span>
+                </div>
+                <span className="text-xs text-gray-500">{new Date(review.created_at).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+              </div>
+              {review.title ? <h4 className="font-bold text-white mb-1">{review.title}</h4> : null}
+              {review.body ? <p className="text-sm text-gray-400">{review.body}</p> : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function ProductDetailsContent({ product, relatedProducts = [] }) {
   const { addToCart, recentlyViewed, addRecentlyViewed } = useShop();
   const [selectedVariant, setSelectedVariant] = useState(product.variants[0] ?? null);
   const [selectedImage, setSelectedImage] = useState(product.images?.[0] || null);
   const [quantity, setQuantity] = useState(1);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
+
+  const selectedStock = selectedVariant?.stock ?? 0;
+  const isOutOfStock = selectedStock === 0;
 
   useEffect(() => {
     const firstVariant = product.variants[0] ?? null;
@@ -156,17 +330,41 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
               {getProductCategoryName(product)}
             </span>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl tracking-tight text-gray-900 font-heading font-[850] mb-4 leading-tight">
-              {product.name}
-            </h1>
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl tracking-tight text-gray-900 font-heading font-[850] mb-4 leading-tight">
+                {product.name}
+              </h1>
+              <div className="flex items-center gap-2 shrink-0">
+                <ShareButton title={product.name} text={product.description} />
+              </div>
+            </div>
 
-            <div className="flex items-center gap-3 sm:gap-4 mb-6">
+            <div className="flex items-center gap-3 sm:gap-4 mb-2">
               <PriceBlock product={product} />
             </div>
+
+            {product.on_sale && product.sale_ends_at ? (
+              <div className="mb-6">
+                <CountdownTimer endTime={product.sale_ends_at} />
+              </div>
+            ) : null}
 
             <p className="mb-8 text-base sm:text-lg text-gray-600 font-sans leading-relaxed">
               {product.description}
             </p>
+
+            {product.avg_rating > 0 ? (
+              <div className="flex items-center gap-2 mb-4">
+                <StarRatingDisplay rating={Math.round(product.avg_rating)} />
+                <span className="text-sm text-gray-400">{product.avg_rating} ({product.review_count})</span>
+              </div>
+            ) : null}
+
+            {product.video_url ? (
+              <div className="mb-6 aspect-video rounded-2xl overflow-hidden">
+                <iframe src={product.video_url} title="Product video" className="w-full h-full" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+              </div>
+            ) : null}
 
             {product.variants.length > 0 ? (
               <div className="mb-6">
@@ -199,6 +397,33 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
               </div>
             ) : null}
 
+            <button onClick={() => setShowSizeGuide(true)} className="text-xs text-brand-pink hover:underline mb-4 inline-block font-bold uppercase tracking-widest">
+              Size Guide
+            </button>
+
+            {isOutOfStock ? (
+              <p className="text-red-400 font-bold text-sm mb-2">Out of Stock</p>
+            ) : selectedStock > 0 && selectedStock <= 5 ? (
+              <p className="text-amber-400 font-bold text-sm mb-2">Only {selectedStock} left</p>
+            ) : null}
+
+            {product.is_preorder && product.preorder_release_date ? (
+              <p className="flex items-center gap-1.5 text-amber-400 font-bold text-sm mb-2">
+                <Clock size={14} /> Preorder — Releases {new Date(product.preorder_release_date).toLocaleDateString('en-PK', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            ) : null}
+
+            <div className="flex flex-wrap gap-3 mb-4">
+              {selectedVariant ? (
+                <button type="button" onClick={() => { const email = prompt('Enter your email to be notified when back in stock:'); if (email) fetch('/api/stock-alert', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, variantId: selectedVariant.id }) }).then(() => alert('Stock alert set!')).catch(() => alert('Failed')); }} className="text-xs text-amber-400 hover:underline inline-flex items-center gap-1 font-bold uppercase tracking-widest">
+                  <Bell size={12} /> Notify when in stock
+                </button>
+              ) : null}
+              <button type="button" onClick={() => { const email = prompt('Enter your email for a price alert:'); if (email) fetch('/api/price-alert', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, productId: product.id, targetPrice: Number(getEffectivePrice(product)) }) }).then(() => alert('Price alert set!')).catch(() => alert('Failed')); }} className="text-xs text-brand-pink hover:underline inline-flex items-center gap-1 font-bold uppercase tracking-widest">
+                <Bell size={12} /> Price Alert
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-[auto,auto] sm:items-center">
               <QuantitySelector
                 quantity={quantity}
@@ -207,32 +432,54 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
               />
 
               <button
-                onClick={() => selectedVariant && addToCart(product, selectedVariant, quantity)}
-                className="add-to-cart-button h-[52px] w-full sm:w-64 bg-gradient-to-r from-brand-pink to-brand-coral text-white rounded-xl flex items-center justify-center text-sm sm:text-base font-bold transition-all duration-300 shadow-lg hover:shadow-2xl hover:-translate-y-1 font-sans uppercase tracking-widest px-5 sm:px-7"
+                onClick={() => !isOutOfStock && selectedVariant && addToCart(product, selectedVariant, quantity)}
+                disabled={isOutOfStock}
+                className="add-to-cart-button h-[52px] w-full sm:w-64 bg-gradient-to-r from-brand-pink to-brand-coral text-white rounded-xl flex items-center justify-center text-sm sm:text-base font-bold transition-all duration-300 shadow-lg hover:shadow-2xl hover:-translate-y-1 font-sans uppercase tracking-widest px-5 sm:px-7 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
                 <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                Add to Cart
+                {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
               </button>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm text-gray-600 font-sans">
+            <div className="mt-4 text-xs text-gray-500 font-sans flex items-center gap-1.5">
+              <Truck size={12} /> Est. delivery: 3–5 business days
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm text-gray-600 font-sans">
               <TrustItem icon={Truck} text="Ships across Pakistan" />
               <TrustItem icon={ShieldCheck} text="Cash on Delivery" />
               <TrustItem icon={RotateCcw} text="30-day returns" />
             </div>
+
+            <BulkPricingTable product={product} />
           </div>
         </div>
       </div>
 
-      {(recentlyViewed.length >= 4 && recentlyViewedProducts.length > 0) || relatedProducts.length > 0 ? (
+      {product.lookProducts?.length > 0 ? (
+        <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full border-t border-white/10">
+          <h2 className="text-2xl font-heading font-[850] text-white mb-6 text-center">Complete the Look</h2>
+          <Carousel maxItems={4} centerThreshold={4}>
+            {product.lookProducts.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
+          </Carousel>
+        </div>
+      ) : null}
+
+      {showSizeGuide ? <SizeGuideModal category={product.categorySlug} onClose={() => setShowSizeGuide(false)} /> : null}
+
+      <ReviewsSection product={product} />
+
+      {(recentlyViewedProducts.length >= 2) || relatedProducts.length > 0 ? (
         <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full animate-fade-in-up border-t border-gray-100 mt-6">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl text-gray-900 font-heading font-[850] capitalize tracking-wide">
-              {recentlyViewed.length >= 4 && recentlyViewedProducts.length > 0 ? 'Recently Viewed' : 'You may also like'}
+              {recentlyViewedProducts.length >= 2 ? 'Recently Viewed' : 'You may also like'}
             </h2>
           </div>
-          <Carousel maxItems={4} centerThreshold={4}>
-            {(recentlyViewed.length >= 4 && recentlyViewedProducts.length > 0 ? recentlyViewedProducts : relatedProducts).slice(0, 4).map((item) => (
+          <Carousel maxItems={8} centerThreshold={4}>
+            {(recentlyViewedProducts.length >= 2 ? recentlyViewedProducts.slice(0, 8) : relatedProducts.slice(0, 8)).map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}
           </Carousel>
@@ -249,7 +496,16 @@ export default function ProductDetails() {
   const [error, setError] = useState('');
   const [relatedProducts, setRelatedProducts] = useState([]);
 
-  usePageTitle(product ? product.name : 'Product', product?.description);
+  usePageTitle(product ? (product.meta_title || product.name) : 'Product', product?.meta_description || product?.description);
+
+  useEffect(() => {
+    if (!product) return;
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(productSchema(product));
+    document.head.appendChild(script);
+    return () => { document.head.removeChild(script); };
+  }, [product]);
 
   useEffect(() => {
     let cancelled = false;

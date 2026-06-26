@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Eye, Heart, Star, BarChart3, Clock, Timer } from 'lucide-react';
 import { useShop } from '../context/useShop';
 import { getEffectivePrice, getProductPath, getProductPrimaryImage } from '../lib/product-utils';
+import CountdownTimer from './CountdownTimer';
+import QuickViewModal from './QuickViewModal';
 
 function getSalePrice(product) {
   const value = product?.salePrice ?? product?.sale_price;
@@ -15,31 +18,47 @@ function isProductOnSale(product) {
 }
 
 export const ProductCard = ({ product }) => {
+  const [showQuickView, setShowQuickView] = useState(false);
   const imageUrl = getProductPrimaryImage(product);
   const effectivePrice = getEffectivePrice(product);
   const productPath = getProductPath(product);
   const hasRealSale = isProductOnSale(product);
-  const { toggleWishlist, isInWishlist } = useShop();
+  const { toggleWishlist, isInWishlist, toggleCompare, compareList } = useShop();
+  const inCompare = compareList.some((item) => item.id === product.id);
   const liked = isInWishlist(product.id);
 
   return (
     <article className="store-product-card group block animate-fade-in-up">
-      <Link to={productPath} className="block" aria-label={product.name}>
-        <div className="store-product-card-image w-full aspect-[9/10] rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-2xl group-hover:-translate-y-1.5 transition-all duration-500 relative overflow-hidden">
-          {hasRealSale && (
-            <span className="store-sale-badge absolute top-3 left-3 z-20 bg-white text-brand-coral text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-              Sale
-            </span>
-          )}
+      <div className="block relative" aria-label={product.name}>
+        <Link to={productPath}>
+          <div className="store-product-card-image w-full aspect-[9/10] rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-2xl group-hover:-translate-y-1.5 transition-all duration-500 relative overflow-hidden">
+            {product.is_preorder ? (
+              <span className="absolute top-3 left-3 z-20 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
+                <Clock size={10} /> Preorder
+              </span>
+            ) : hasRealSale ? (
+              <span className="store-sale-badge absolute top-3 left-3 z-20 bg-white text-brand-coral text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
+                <Timer size={10} />
+                {product.sale_ends_at ? <CountdownTimer endTime={product.sale_ends_at} compact /> : 'Sale'}
+              </span>
+            ) : null}
 
-          <button
-            type="button"
-            onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
-            className="absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors"
-            aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
-          >
-            <Heart className={`w-4.5 h-4.5 transition-colors ${liked ? 'fill-brand-pink text-brand-pink' : 'text-white'}`} />
-          </button>
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
+              className="absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+              aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
+            >
+              <Heart className={`w-4.5 h-4.5 transition-colors ${liked ? 'fill-brand-pink text-brand-pink' : 'text-white'}`} />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); toggleCompare(product); }}
+              className="absolute top-12 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+              aria-label={inCompare ? 'Remove from compare' : 'Add to compare'}
+            >
+              <BarChart3 className={`w-4 h-4 transition-colors ${inCompare ? 'text-brand-pink' : 'text-white'}`} />
+            </button>
 
           <div className="product-card-image-skeleton" aria-hidden="true" />
           {imageUrl ? (
@@ -54,12 +73,32 @@ export const ProductCard = ({ product }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/8 to-transparent pointer-events-none"></div>
           <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"></div>
         </div>
-      </Link>
+        </Link>
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); setShowQuickView(true); }}
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full bg-black/70 text-white text-[11px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-brand-pink hover:text-black shadow-lg whitespace-nowrap"
+        >
+          <Eye className="w-3.5 h-3.5 mr-1.5 inline-block" />
+          Quick View
+        </button>
+      </div>
 
       <Link to={productPath} className="store-product-card-info mt-4 sm:mt-5 flex flex-col items-center text-center px-2">
         <h3 className="store-product-card-title text-base sm:text-lg md:text-xl text-gray-900 font-heading font-[850] leading-tight uppercase tracking-wide">
           {product.name}
         </h3>
+
+        {product.avg_rating > 0 ? (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star key={star} size={12} className={star <= Math.round(product.avg_rating) ? 'fill-brand-pink text-brand-pink' : 'text-white/20'} />
+              ))}
+            </div>
+            <span className="text-[11px] text-gray-500">({product.review_count})</span>
+          </div>
+        ) : null}
 
         <div className="store-product-card-price flex flex-wrap justify-center items-center gap-2.5 mt-3">
           {hasRealSale ? (
@@ -72,6 +111,7 @@ export const ProductCard = ({ product }) => {
           )}
         </div>
       </Link>
+      {showQuickView ? <QuickViewModal product={product} onClose={() => setShowQuickView(false)} /> : null}
     </article>
   );
 };

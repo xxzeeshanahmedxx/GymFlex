@@ -31,6 +31,7 @@ export async function onRequestPost(context) {
   const customer = body?.customer || {};
   const cartItems = Array.isArray(body?.items) ? body.items : [];
   const discountCode = cleanString(body?.discountCode || '').toUpperCase();
+  const notes = cleanString(body?.notes || '');
 
   const firstName = cleanString(customer.firstName);
   const lastName = cleanString(customer.lastName);
@@ -133,8 +134,8 @@ export async function onRequestPost(context) {
 
   const statements = [
     context.env.STORE_DB
-      .prepare('INSERT INTO orders (id, order_number, first_name, last_name, address, state, city, phone, country, payment_method, status, subtotal, shipping_fee, total, currency, discount_code, discount_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(orderId, orderNumber, firstName, lastName, address, state, city, phone, country, paymentMethod, 'new', subtotal, shippingFee, total, 'PKR', appliedDiscountCode, discountAmount),
+      .prepare('INSERT INTO orders (id, order_number, first_name, last_name, address, state, city, phone, country, payment_method, status, subtotal, shipping_fee, total, currency, discount_code, discount_amount, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(orderId, orderNumber, firstName, lastName, address, state, city, phone, country, paymentMethod, 'new', subtotal, shippingFee, total, 'PKR', appliedDiscountCode, discountAmount, notes),
     ...items.map((item) =>
       context.env.STORE_DB
         .prepare('INSERT INTO order_items (id, order_id, product_id, product_name, variant_id, variant_type, variant_name, unit_price, quantity, line_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')

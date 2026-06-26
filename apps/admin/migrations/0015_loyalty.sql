@@ -1,0 +1,16 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS loyalty_points (
+  phone TEXT PRIMARY KEY,
+  points INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS loyalty_transactions (
+  id TEXT PRIMARY KEY,
+  phone TEXT NOT NULL,
+  points INTEGER NOT NULL,
+  reason TEXT NOT NULL,
+  order_id TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

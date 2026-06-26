@@ -60,11 +60,12 @@ async function loadProducts(db, filters) {
 
 export async function onRequestGet(context) {
   const db = context.env.STORE_DB;
-  const [homepage, categoryRows, featuredProducts, saleProducts] = await Promise.all([
+  const [homepage, categoryRows, featuredProducts, saleProducts, bestsellerProducts] = await Promise.all([
     loadHomepageSettings(db),
     db.prepare('SELECT * FROM categories ORDER BY sort_order ASC, created_at ASC').all(),
     loadProducts(db, { featured: true, limit: 4 }),
     loadProducts(db, { sale: true, limit: 8 }),
+    loadProducts(db, { bestsellers: true, limit: 8 }),
   ]);
 
   const categories = (categoryRows.results || []).map(normalizeCategory);
@@ -77,6 +78,7 @@ export async function onRequestGet(context) {
     categories,
     featuredProducts,
     saleProducts,
+    bestsellerProducts,
     collectionProducts: Object.fromEntries(collectionEntries),
   }, {
     maxAge: 300,
