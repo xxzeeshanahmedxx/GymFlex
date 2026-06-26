@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Bell, ChevronRight, Clock, RotateCcw, ShieldCheck, ShoppingCart, Truck } from 'lucide-react';
+import { Bell, ChevronRight, Clock, RotateCcw, ShieldCheck, ShoppingCart, Sparkles, Truck } from 'lucide-react';
 import { Carousel } from '../components/Carousel';
 import { ProductCard } from '../components/ProductCard';
 import { SectionState } from '../components/SectionState';
@@ -9,6 +9,7 @@ import ShareButton from '../components/ShareButton';
 import SizeGuideModal from '../components/SizeGuideModal';
 import { StarRatingDisplay, StarRatingInput } from '../components/StarRating';
 import CountdownTimer from '../components/CountdownTimer';
+import TryOnModal from '../components/TryOnModal';
 import { useShop } from '../context/useShop';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { fetchCatalog, fetchProductById } from '../lib/storefront-api';
@@ -302,6 +303,7 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
   const [selectedImage, setSelectedImage] = useState(product.images?.[0] || null);
   const [quantity, setQuantity] = useState(1);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [showTryOn, setShowTryOn] = useState(false);
 
   const selectedStock = selectedVariant?.stock ?? 0;
   const isOutOfStock = selectedStock === 0;
@@ -397,9 +399,10 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
               </div>
             ) : null}
 
-            <button onClick={() => setShowSizeGuide(true)} className="text-xs text-brand-pink hover:underline mb-4 inline-block font-bold uppercase tracking-widest">
-              Size Guide
-            </button>
+            <div className="flex flex-wrap gap-4 mb-4">
+              <button onClick={() => setShowSizeGuide(true)} className="text-xs text-brand-pink hover:underline font-bold uppercase tracking-widest">Size Guide</button>
+              <button onClick={() => setShowTryOn(true)} className="text-xs text-amber-400 hover:underline font-bold uppercase tracking-widest inline-flex items-center gap-1"><Sparkles size={12} /> Virtual Try-On</button>
+            </div>
 
             {isOutOfStock ? (
               <p className="text-red-400 font-bold text-sm mb-2">Out of Stock</p>
@@ -468,6 +471,7 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
       ) : null}
 
       {showSizeGuide ? <SizeGuideModal category={product.categorySlug} onClose={() => setShowSizeGuide(false)} /> : null}
+      {showTryOn ? <TryOnModal product={product} onClose={() => setShowTryOn(false)} /> : null}
 
       <ReviewsSection product={product} />
 

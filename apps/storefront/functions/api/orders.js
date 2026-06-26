@@ -19,6 +19,7 @@ async function getShippingSettings(db) {
   return {
     shippingFee: Math.max(0, Number(saved.shippingFee ?? DEFAULT_SHIPPING_FEE)),
     freeShippingMinimum: Math.max(0, Number(saved.freeShippingMinimum ?? 0)),
+    taxRate: Math.max(0, Number(saved.taxRate ?? 0)),
   };
 }
 
@@ -32,6 +33,9 @@ export async function onRequestPost(context) {
   const cartItems = Array.isArray(body?.items) ? body.items : [];
   const discountCode = cleanString(body?.discountCode || '').toUpperCase();
   const notes = cleanString(body?.notes || '');
+  const giftCardCode = cleanString(body?.giftCardCode || '').toUpperCase();
+  const giftCardAmount = Math.max(0, Number(body?.giftCardAmount || 0));
+  const saveAddress = body?.saveAddress === true;
 
   const firstName = cleanString(customer.firstName);
   const lastName = cleanString(customer.lastName);
@@ -130,12 +134,32 @@ export async function onRequestPost(context) {
     }
   }
 
-  const total = Math.max(0, subtotal + shippingFee - discountAmount);
+  let appliedGiftCardCode = '';
+  let usedGiftAmount = 0;
+
+  if (giftCardCode && giftCardAmount > 0) {
+    const card = await context.env.STORE_DB.prepare("SELECT * FROM gift_cards WHERE code = ? AND is_active = 1 AND balance >= ? AND (expires_at IS NULL OR expires_at >= date('now')) LIMIT 1").bind(giftCardCode, giftCardAmount).first();
+    if (card) {
+      appliedGiftCardCode = giftCardCode;
+      usedGiftAmount = Math.min(giftCardAmount, card.balance);
+      await context.env.STORE_DB.prepare("UPDATE gift_cards SET balance = balance - ? WHERE id = ?").bind(usedGiftAmount, card.id).run();
+    }
+  }
+
+  if (saveAddress && phone) {
+    const existing = await context.env.STORE_DB.prepare('SELECT id FROM saved_addresses WHERE customer_email = ? AND address_line1 = ? AND city = ? LIMIT 1').bind(phone, address, city).first();
+    if (!existing) {
+      await context.env.STORE_DB.prepare('INSERT INTO saved_addresses (id, customer_email, label, address_line1, city, phone) VALUES (?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(), phone, 'Home', address, city, phone).run();
+    }
+  }
+
+  const taxAmount = body?.taxAmount ? Number(body.taxAmount) : Math.round(Math.max(0, subtotal - discountAmount) * shippingSettings.taxRate / 100);
+  const total = Math.max(0, subtotal + shippingFee + taxAmount - discountAmount - usedGiftAmount);
 
   const statements = [
     context.env.STORE_DB
-      .prepare('INSERT INTO orders (id, order_number, first_name, last_name, address, state, city, phone, country, payment_method, status, subtotal, shipping_fee, total, currency, discount_code, discount_amount, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(orderId, orderNumber, firstName, lastName, address, state, city, phone, country, paymentMethod, 'new', subtotal, shippingFee, total, 'PKR', appliedDiscountCode, discountAmount, notes),
+      .prepare('INSERT INTO orders (id, order_number, first_name, last_name, address, state, city, phone, country, payment_method, status, subtotal, shipping_fee, total, currency, discount_code, discount_amount, tax_amount, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(orderId, orderNumber, firstName, lastName, address, state, city, phone, country, paymentMethod, 'new', subtotal, shippingFee, total, 'PKR', appliedDiscountCode, discountAmount, taxAmount, notes),
     ...items.map((item) =>
       context.env.STORE_DB
         .prepare('INSERT INTO order_items (id, order_id, product_id, product_name, variant_id, variant_type, variant_name, unit_price, quantity, line_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
@@ -154,6 +178,9 @@ export async function onRequestPost(context) {
       shippingFee,
       discountAmount,
       discountCode: appliedDiscountCode,
+      giftCardCode: appliedGiftCardCode,
+      giftCardAmount: usedGiftAmount,
+      taxAmount,
       total,
       status: 'new',
     },

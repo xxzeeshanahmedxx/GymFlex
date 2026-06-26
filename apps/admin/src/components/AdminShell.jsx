@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BarChart3, Bell, Camera, Database, FileSpreadsheet, FolderKanban, Gift, HelpCircle, LogOut, Mail, MessageSquare, Package, Percent, RefreshCw, ScrollText, Settings, Shield, ShoppingBag, Star, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BarChart3, Bell, Camera, Database, FileSpreadsheet, FolderKanban, Gift, HelpCircle, LogOut, Mail, MessageSquare, Moon, Package, Percent, RefreshCw, ScrollText, Settings, Shield, ShoppingBag, Star, Sun, TrendingUp } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -29,6 +29,14 @@ const links = [
 export function AdminShell() {
   const { logout } = useAuth();
   const [purging, setPurging] = useState(false);
+  const [adminTheme, setAdminTheme] = useState(() => localStorage.getItem('admin_theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', adminTheme === 'light' ? 'light' : 'dark');
+    localStorage.setItem('admin_theme', adminTheme);
+  }, [adminTheme]);
+
+  const toggleAdminTheme = () => setAdminTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
   const purgeCache = async () => {
     setPurging(true);
@@ -71,6 +79,10 @@ export function AdminShell() {
         </nav>
 
         <div className="app-sidebar-actions">
+          <button type="button" className="app-utility-button" onClick={toggleAdminTheme} title="Toggle theme">
+            {adminTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span>{adminTheme === 'dark' ? 'Light' : 'Dark'}</span>
+          </button>
           <button type="button" className="app-utility-button" onClick={purgeCache} disabled={purging} title="Purge cache">
             <RefreshCw size={16} className={purging ? 'spin-icon' : ''} />
             <span>Cache</span>

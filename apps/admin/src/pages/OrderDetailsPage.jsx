@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Download, Save, Trash2, Truck } from 'lucide-react';
+import { ArrowLeft, Download, Printer, Save, Trash2, Truck } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { del, get, patch } from '../lib/api';
 import { downloadOrderPdf } from '../lib/orderPdf';
@@ -112,9 +112,14 @@ export function OrderDetailsPage() {
         actions={
           <div className="row-actions row-actions-compact">
             {data ? (
-              <button className="icon-action-link" type="button" onClick={downloadPdf} disabled={pdfDownloading} aria-label="Download PDF" title="Download PDF">
-                <Download size={16} />
-              </button>
+              <>
+                <button className="icon-action-link" type="button" onClick={downloadPdf} disabled={pdfDownloading} aria-label="Download PDF" title="Download PDF">
+                  <Download size={16} />
+                </button>
+                <button className="icon-action-link" type="button" onClick={() => window.print()} aria-label="Packing slip" title="Packing slip">
+                  <Printer size={16} />
+                </button>
+              </>
             ) : null}
             <button className="icon-action-link icon-action-danger" type="button" onClick={deleteOrder} aria-label="Delete order" title="Delete order">
               <Trash2 size={16} />

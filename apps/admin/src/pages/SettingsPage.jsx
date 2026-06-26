@@ -26,6 +26,7 @@ const defaultHomepage = {
   heroBanner: defaultHeroBanner,
   shippingFee: 250,
   freeShippingMinimum: 0,
+  taxRate: 0,
 };
 
 function normalizeHeroBanner(homepage) {
@@ -241,6 +242,10 @@ export function SettingsPage() {
           <label>
             Free shipping minimum
             <input type="number" min="0" value={homepage.freeShippingMinimum ?? 0} onChange={(event) => setHomepage((current) => ({ ...current, freeShippingMinimum: Number(event.target.value) }))} />
+          </label>
+          <label>
+            Tax rate %
+            <input type="number" min="0" max="100" step="0.01" value={homepage.taxRate ?? 0} onChange={(event) => setHomepage((current) => ({ ...current, taxRate: Number(event.target.value) }))} />
           </label>
         </div>
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PackageCheck, Printer, Search } from 'lucide-react';
+import { PackageCheck, Printer, Search, XCircle } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const inputClassName = 'w-full rounded-2xl border border-white/20 bg-[#1a1a1a] px-4 py-3.5 font-semibold text-white outline-none transition focus:border-brand-pink focus:bg-[#222]';
@@ -85,9 +85,24 @@ export default function TrackOrder() {
                   </button>
                 </div>
               </div>
-              <span className="rounded-full bg-brand-pink px-4 py-2 text-xs font-bold uppercase tracking-widest text-black">
-                {statusLabels[order.status] || order.status}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-brand-pink px-4 py-2 text-xs font-bold uppercase tracking-widest text-black">
+                  {statusLabels[order.status] || order.status}
+                </span>
+                {order.status === 'new' ? (
+                  <button type="button" onClick={async () => {
+                    if (!window.confirm('Cancel this order?')) return;
+                    try {
+                      const res = await fetch('/api/cancel-order', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ orderNumber: order.orderNumber, phone: phoneDigits(phone) }) });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || 'Failed');
+                      setOrder((prev) => ({ ...prev, status: 'cancelled' }));
+                    } catch (err) { alert(err.message); }
+                  }} className="rounded-full bg-red-500/20 px-4 py-2 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/30 transition-colors inline-flex items-center gap-1.5">
+                    <XCircle size={14} /> Cancel
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             <div className="mt-6 grid gap-4 text-sm text-gray-400 sm:grid-cols-2">
@@ -118,6 +133,7 @@ export default function TrackOrder() {
             <div className="mt-5 grid gap-3 border-t border-white/10 pt-5">
               <div className="flex items-center justify-between text-sm font-bold text-gray-400"><span>Subtotal</span><span>Rs. {order.subtotal}</span></div>
               <div className="flex items-center justify-between text-sm font-bold text-gray-400"><span>Shipping</span><span>Rs. {order.shippingFee || 0}</span></div>
+              {order.taxAmount > 0 ? <div className="flex items-center justify-between text-sm font-bold text-gray-400"><span>GST</span><span>Rs. {order.taxAmount}</span></div> : null}
               <div className="flex items-center justify-between">
                 <span className="font-heading font-[850] uppercase tracking-widest text-white">Total</span>
                 <span className="text-2xl font-bold text-brand-pink">Rs. {order.total}</span>

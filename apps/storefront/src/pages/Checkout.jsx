@@ -115,18 +115,27 @@ function OrderItems({ cart, subtotal, shippingFee, total }) {
 
 export default function Checkout() {
   const { cart, cartTotal, clearCart } = useShop();
-  const [shippingSettings, setShippingSettings] = useState({ shippingFee: DEFAULT_SHIPPING_FEE, freeShippingMinimum: 0 });
+  const [shippingSettings, setShippingSettings] = useState({ shippingFee: DEFAULT_SHIPPING_FEE, freeShippingMinimum: 0, taxRate: 0 });
   const shippingFee = cart.length > 0 && (!shippingSettings.freeShippingMinimum || cartTotal < shippingSettings.freeShippingMinimum) ? shippingSettings.shippingFee : 0;
   const discountAmount = appliedDiscount?.discountAmount || 0;
-  const orderTotal = Math.max(0, cartTotal + shippingFee - discountAmount);
+  const giftCardAmount = appliedGiftCard ? Math.min(appliedGiftCard.balance, Math.max(0, cartTotal - discountAmount)) : 0;
+  const afterDiscount = Math.max(0, cartTotal - discountAmount - giftCardAmount);
+  const taxAmount = Math.round(afterDiscount * (shippingSettings.taxRate || 0) / 100);
+  const orderTotal = Math.max(0, afterDiscount + shippingFee + taxAmount);
   const navigate = useNavigate();
   const [submittedOrder, setSubmittedOrder] = useState(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [phoneBlurred, setPhoneBlurred] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [discountError, setDiscountError] = useState('');
   const [checkingDiscount, setCheckingDiscount] = useState(false);
+  const [giftCardCode, setGiftCardCode] = useState('');
+  const [appliedGiftCard, setAppliedGiftCard] = useState(null);
+  const [giftCardError, setGiftCardError] = useState('');
+  const [checkingGiftCard, setCheckingGiftCard] = useState(false);
 
   usePageTitle('Checkout');
 
@@ -157,6 +166,33 @@ export default function Checkout() {
     setDiscountError('');
   }, []);
 
+  const applyGiftCard = useCallback(async () => {
+    const code = giftCardCode.trim().toUpperCase();
+    if (!code) return;
+    setCheckingGiftCard(true);
+    setGiftCardError('');
+    setAppliedGiftCard(null);
+    try {
+      const response = await fetch(`/api/validate-gift-card?code=${encodeURIComponent(code)}`);
+      const data = await response.json();
+      if (!data.valid) {
+        setGiftCardError(data.error || 'Invalid code');
+      } else {
+        setAppliedGiftCard(data);
+      }
+    } catch {
+      setGiftCardError('Could not validate gift card.');
+    } finally {
+      setCheckingGiftCard(false);
+    }
+  }, [giftCardCode]);
+
+  const removeGiftCard = useCallback(() => {
+    setGiftCardCode('');
+    setAppliedGiftCard(null);
+    setGiftCardError('');
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     fetchHomepageSettings()
@@ -165,6 +201,7 @@ export default function Checkout() {
           setShippingSettings({
             shippingFee: Math.max(0, Number(settings?.shippingFee ?? DEFAULT_SHIPPING_FEE)),
             freeShippingMinimum: Math.max(0, Number(settings?.freeShippingMinimum ?? 0)),
+            taxRate: Math.max(0, Number(settings?.taxRate ?? 0)),
           });
         }
       })
@@ -206,6 +243,10 @@ export default function Checkout() {
       })),
       discountCode: appliedDiscount?.code || '',
       notes: formData.get('notes'),
+      taxAmount,
+      giftCardCode: appliedGiftCard?.code || '',
+      giftCardAmount,
+      saveAddress: formData.get('save-address') === '1',
     };
 
     try {
@@ -256,7 +297,13 @@ export default function Checkout() {
               <label htmlFor="phone" className={labelClassName}>Phone</label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-4 flex items-center text-gray-500 font-bold">+92</span>
-                <input id="phone" name="phone" className={`${inputClassName} pl-14`} type="tel" placeholder="300 1234567" minLength={10} required autoComplete="tel" />
+                <input id="phone" name="phone" className={`${inputClassName} pl-14`} type="tel" placeholder="300 1234567" minLength={10} required autoComplete="tel" onBlur={async (e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  if (val.length >= 10) {
+                    try { const res = await fetch(`/api/addresses?phone=${val}`); const d = await res.json(); setSavedAddresses(d.addresses || []); } catch {}
+                    setPhoneBlurred(true);
+                  }
+                }} />
               </div>
             </div>
 
@@ -277,10 +324,28 @@ export default function Checkout() {
               <label for="address" className={labelClassName}>Address</label>
               <textarea id="address" name="address" rows="4" minLength={8} required className={inputClassName} />
             </div>
+            {savedAddresses.length > 0 ? (
+              <div>
+                <label className={labelClassName}>Saved addresses</label>
+                <div className="grid gap-2">
+                  {savedAddresses.map((addr) => (
+                    <button key={addr.id} type="button" onClick={() => {
+                      document.getElementById('address').value = addr.address_line1 + (addr.address_line2 ? ', ' + addr.address_line2 : '');
+                      document.getElementById('city').value = addr.city;
+                    }} className="text-left rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-gray-300 hover:border-brand-pink transition-colors">
+                      <strong className="text-white">{addr.label}</strong>: {addr.address_line1}, {addr.city}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <div>
               <label htmlFor="notes" className={labelClassName}>Order notes (optional)</label>
               <textarea id="notes" name="notes" rows="3" className={inputClassName} placeholder="Delivery instructions, landmark, etc." />
             </div>
+            <label className="flex items-center gap-2 text-xs text-gray-400">
+              <input type="checkbox" name="save-address" value="1" className="accent-brand-pink" /> Save this address for next time
+            </label>
           </div>
 
           {error ? <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div> : null}
@@ -316,6 +381,26 @@ export default function Checkout() {
             {discountError ? <p className="mt-2 text-xs font-semibold text-red-400">{discountError}</p> : null}
           </div>
 
+          <div className="mt-4 border-t border-white/10 pt-4">
+            {appliedGiftCard ? (
+              <div className="flex items-center justify-between rounded-xl bg-amber-500/10 px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-amber-400 uppercase">{appliedGiftCard.code}</span>
+                  <span className="text-xs text-gray-400">(Rs. {appliedGiftCard.balance} available)</span>
+                </div>
+                <button type="button" onClick={removeGiftCard} className="text-gray-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors">Remove</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input type="text" value={giftCardCode} onChange={(e) => setGiftCardCode(e.target.value.toUpperCase())} placeholder="Gift card code" className="flex-1 rounded-xl border border-white/20 bg-[#1a1a1a] px-3 py-2.5 text-sm text-white outline-none transition focus:border-amber-400 placeholder:text-gray-500 uppercase" />
+                <button type="button" onClick={applyGiftCard} disabled={!giftCardCode.trim() || checkingGiftCard} className="rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-black transition hover:bg-amber-500/90 disabled:opacity-50 whitespace-nowrap">
+                  {checkingGiftCard ? '...' : 'Apply'}
+                </button>
+              </div>
+            )}
+            {giftCardError ? <p className="mt-2 text-xs font-semibold text-red-400">{giftCardError}</p> : null}
+          </div>
+
           <div className="mt-4 border-t border-white/10 pt-4 grid gap-2.5">
             <div className="flex items-center justify-between text-sm font-bold text-gray-400">
               <span>Subtotal</span>
@@ -331,12 +416,27 @@ export default function Checkout() {
                 <span>-Rs. {discountAmount}</span>
               </div>
             ) : null}
+            {giftCardAmount > 0 ? (
+              <div className="flex items-center justify-between text-sm font-bold text-amber-400">
+                <span>Gift Card</span>
+                <span>-Rs. {giftCardAmount}</span>
+              </div>
+            ) : null}
+            {shippingSettings.taxRate > 0 ? (
+              <div className="flex items-center justify-between text-sm font-bold text-gray-400">
+                <span>GST ({shippingSettings.taxRate}%)</span>
+                <span>Rs. {taxAmount}</span>
+              </div>
+            ) : null}
             {shippingSettings.freeShippingMinimum > 0 && cartTotal < shippingSettings.freeShippingMinimum ? (
               <p className="text-xs font-semibold text-gray-500">Free shipping over Rs. {shippingSettings.freeShippingMinimum}</p>
             ) : null}
             <div className="flex items-center justify-between pt-2 border-t border-white/10">
               <span className="text-lg font-heading font-[850] uppercase tracking-widest text-white">Total</span>
               <span className="text-2xl font-bold text-brand-pink">Rs. {orderTotal}</span>
+            </div>
+            <div className="rounded-xl bg-white/5 px-3 py-2.5 text-xs text-gray-400 font-semibold text-center">
+              Please have approximately <span className="text-white font-bold">Rs. {Math.ceil(orderTotal / 100) * 100}</span> ready for the delivery rider
             </div>
           </div>
           <button type="submit" disabled={isSubmitting} className="mt-6 w-full rounded-xl bg-gradient-to-r from-brand-pink to-brand-coral px-4 py-4 text-base font-bold uppercase tracking-widest text-black shadow-lg transition hover:-translate-y-1 hover:shadow-xl disabled:opacity-60 disabled:hover:translate-y-0">
