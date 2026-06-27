@@ -1,11 +1,8 @@
-import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Heart, Star, BarChart3, Clock, Timer } from 'lucide-react';
+import { Heart, Star, Clock, Timer } from 'lucide-react';
 import { useShop } from '../context/useShop';
 import { getEffectivePrice, getProductPath, getProductPrimaryImage } from '../lib/product-utils';
 import CountdownTimer from './CountdownTimer';
-
-const QuickViewModal = lazy(() => import('./QuickViewModal'));
 
 function getSalePrice(product) {
   const value = product?.salePrice ?? product?.sale_price;
@@ -19,13 +16,11 @@ function isProductOnSale(product) {
 }
 
 export const ProductCard = ({ product }) => {
-  const [showQuickView, setShowQuickView] = useState(false);
   const imageUrl = getProductPrimaryImage(product);
   const effectivePrice = getEffectivePrice(product);
   const productPath = getProductPath(product);
   const hasRealSale = isProductOnSale(product);
-  const { toggleWishlist, isInWishlist, toggleCompare, compareList } = useShop();
-  const inCompare = compareList.some((item) => item.id === product.id);
+  const { toggleWishlist, isInWishlist } = useShop();
   const liked = isInWishlist(product.id);
 
   return (
@@ -52,14 +47,6 @@ export const ProductCard = ({ product }) => {
             >
               <Heart key={liked} className={`w-[18px] h-[18px] transition-colors ${liked ? 'fill-brand-pink text-brand-pink heart-pulse' : 'text-white'}`} />
             </button>
-            <button
-              type="button"
-              onClick={(e) => { e.preventDefault(); toggleCompare(product); }}
-              className="prod-card-action-btn secondary absolute top-12 right-3 z-20 rounded-full bg-black/40 hover:bg-black/60 transition-colors"
-              aria-label={inCompare ? 'Remove from compare' : 'Add to compare'}
-            >
-              <BarChart3 className={`w-[16px] h-[16px] transition-colors ${inCompare ? 'text-brand-pink' : 'text-white'}`} />
-            </button>
 
           <div className="product-card-image-skeleton" aria-hidden="true" />
           {imageUrl ? (
@@ -75,14 +62,6 @@ export const ProductCard = ({ product }) => {
           <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"></div>
         </div>
         </Link>
-        <button
-          type="button"
-          onClick={(e) => { e.preventDefault(); setShowQuickView(true); }}
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full bg-black/70 text-white text-[11px] font-bold uppercase tracking-widest opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-brand-pink hover:text-black shadow-lg whitespace-nowrap"
-        >
-          <Eye className="w-3.5 h-3.5 mr-1.5 inline-block" />
-          Quick View
-        </button>
       </div>
 
       <Link to={productPath} className="store-product-card-info mt-4 sm:mt-5 flex flex-1 flex-col items-center text-center px-2">
@@ -112,7 +91,6 @@ export const ProductCard = ({ product }) => {
           )}
         </div>
       </Link>
-      {showQuickView ? <Suspense fallback={null}><QuickViewModal product={product} onClose={() => setShowQuickView(false)} /></Suspense> : null}
     </article>
   );
 };

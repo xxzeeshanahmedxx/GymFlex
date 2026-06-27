@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BarChart3, Bell, Camera, Database, FileSpreadsheet, FolderKanban, Gift, HelpCircle, LogOut, Mail, MessageSquare, Moon, Package, Percent, RefreshCw, ScrollText, Settings, Shield, ShoppingBag, Star, Sun, TrendingUp } from 'lucide-react';
+import { BarChart3, Camera, Database, FileSpreadsheet, FolderKanban, Gift, HelpCircle, LogOut, Mail, MessageSquare, Moon, Package, Percent, RefreshCw, ScrollText, Settings, Shield, ShoppingBag, Star, Sun, TrendingUp } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,7 +20,6 @@ const links = [
   { to: '/gift-cards', label: 'Gift Cards', icon: Gift },
   { to: '/bundles', label: 'Bundles', icon: FolderKanban },
   { to: '/subscribers', label: 'Subscribers', icon: Mail },
-  { to: '/alerts', label: 'Alerts', icon: Bell },
   { to: '/community-photos', label: 'Community', icon: Camera },
   { to: '/maintenance', label: 'Maintenance', icon: Shield },
   { to: '/settings', label: 'Settings', icon: Settings },

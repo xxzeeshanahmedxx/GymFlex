@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Bell, ChevronRight, Clock, RotateCcw, ShieldCheck, ShoppingCart, Sparkles, Truck } from 'lucide-react';
+import { ChevronRight, Clock, RotateCcw, ShieldCheck, ShoppingCart, Sparkles, Truck } from 'lucide-react';
 import { Carousel } from '../components/Carousel';
 import { ProductCard } from '../components/ProductCard';
 import { SectionState } from '../components/SectionState';
@@ -515,16 +515,7 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
               </p>
             ) : null}
 
-            <div className="flex flex-wrap gap-3 mb-4">
-              {selectedVariant ? (
-                <button type="button" onClick={() => { const email = prompt('Enter your email to be notified when back in stock:'); if (email) fetch('/api/stock-alert', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, variantId: selectedVariant.id }) }).then(() => alert('Stock alert set!')).catch(() => alert('Failed')); }} className="text-xs text-amber-400 hover:underline inline-flex items-center gap-1 font-bold uppercase tracking-widest">
-                  <Bell size={12} /> Notify when in stock
-                </button>
-              ) : null}
-              <button type="button" onClick={() => { const email = prompt('Enter your email for a price alert:'); if (email) fetch('/api/price-alert', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, productId: product.id, targetPrice: Number(getEffectivePrice(product)) }) }).then(() => alert('Price alert set!')).catch(() => alert('Failed')); }} className="text-xs text-brand-pink hover:underline inline-flex items-center gap-1 font-bold uppercase tracking-widest">
-                <Bell size={12} /> Price Alert
-              </button>
-            </div>
+
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-[auto,auto] sm:items-center">
               <QuantitySelector
