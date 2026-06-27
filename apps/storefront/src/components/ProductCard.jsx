@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Heart, Star, Clock, Timer } from 'lucide-react';
 import { useShop } from '../context/useShop';
 import { getEffectivePrice, getProductPath, getProductPrimaryImage } from '../lib/product-utils';
-import CountdownTimer from './CountdownTimer';
 
 function getSalePrice(product) {
   const value = product?.salePrice ?? product?.sale_price;
@@ -33,19 +32,18 @@ export const ProductCard = ({ product }) => {
                 <Clock size={10} /> Preorder
               </span>
             ) : hasRealSale ? (
-              <span className="store-sale-badge sale-badge-pulse absolute top-3 left-3 z-20 bg-white text-brand-coral text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
-                <Timer size={10} />
-                {product.sale_ends_at ? <CountdownTimer endTime={product.sale_ends_at} compact /> : 'Sale'}
+              <span className="store-sale-badge absolute top-3 left-3 z-20 bg-white text-brand-coral shadow-sm w-7 h-7 flex items-center justify-center rounded-full">
+                <Timer size={12} />
               </span>
             ) : null}
 
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
-              className="prod-card-action-btn absolute top-3 right-3 z-20 rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+              className="prod-card-action-btn absolute top-1 right-1 z-20 rounded-full bg-black/50 hover:bg-black/70 transition-colors flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10"
               aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
             >
-              <Heart key={liked} className={`w-[18px] h-[18px] transition-colors ${liked ? 'fill-brand-pink text-brand-pink heart-pulse' : 'text-white'}`} />
+              <Heart key={liked} className={`w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] transition-colors ${liked ? 'fill-brand-pink text-brand-pink heart-pulse' : 'text-white'}`} />
             </button>
 
           <div className="product-card-image-skeleton" aria-hidden="true" />
