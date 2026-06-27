@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Copy, Plus, Star, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Copy, Plus, Star, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { useConfirm } from '../components/ConfirmProvider';
 import { get, post, put, del, api } from '../lib/api';
@@ -119,12 +119,26 @@ export function ProductEditorPage() {
   const [variantRows, setVariantRows] = useState([createVariantRow()]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [draggedImageId, setDraggedImageId] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const dirty = useRef(false);
   const confirm = useConfirm();
+
+  const markDirty = useCallback(() => { dirty.current = true; }, []);
+  useEffect(() => {
+    const handler = (e) => {
+      if (dirty.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, []);
 
   const title = useMemo(() => (isNew ? 'Create product' : `Edit ${product?.name || 'product'}`), [isNew, product]);
   const generatedSlug = useMemo(() => slugify(form.name), [form.name]);
@@ -203,6 +217,7 @@ export function ProductEditorPage() {
   }, [loadData]);
 
   const handleChange = (key, value) => {
+    markDirty();
     setForm((currentValue) => ({ ...currentValue, [key]: value }));
   };
 
@@ -230,6 +245,9 @@ export function ProductEditorPage() {
     try {
       const response = isNew ? await post('/api/products-admin', payload) : await put(`/api/product?id=${id}`, payload);
       setMessage(isNew ? 'Product created successfully.' : 'Product updated successfully.');
+      dirty.current = false;
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
       if (isNew && response?.product?.id) {
         navigate(`/products/${response.product.id}`);
       } else {
@@ -485,8 +503,8 @@ export function ProductEditorPage() {
                 <ToggleField checked={form.is_featured} onChange={(value) => handleChange('is_featured', value)} label="Featured" />
               </div>
 
-              <button className="button button-primary" type="submit" disabled={saving}>
-                {saving ? 'Saving...' : isNew ? 'Create product' : 'Save changes'}
+              <button className={`button button-primary ${saveSuccess ? 'button-success' : ''}`} type="submit" disabled={saving}>
+                {saving ? <span className="save-indicator saving"><span className="save-spinner" /> Saving...</span> : saveSuccess ? <span className="save-indicator saved"><Check size={16} /> Saved</span> : isNew ? 'Create product' : 'Save changes'}
               </button>
             </form>
           </section>

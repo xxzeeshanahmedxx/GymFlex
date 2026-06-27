@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Check, PencilLine, Plus, Trash2, X } from 'lucide-react';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { PageHeader } from '../components/PageHeader';
 import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, post, put } from '../lib/api';
@@ -59,6 +60,7 @@ export function CategoriesPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Categories' }]} />
       <PageHeader title="Categories" />
       {error ? <div className="error-box">{error}</div> : null}
       {message ? <div className="success-box">{message}</div> : null}

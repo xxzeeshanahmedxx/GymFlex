@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Bell, ChevronRight, Clock, RotateCcw, ShieldCheck, ShoppingCart, Sparkles, Truck } from 'lucide-react';
 import { Carousel } from '../components/Carousel';
@@ -35,16 +35,47 @@ function Breadcrumbs({ product }) {
 function ProductVisual({ product, selectedImage, onSelectImage }) {
   const imageUrl = selectedImage?.cdnUrl || selectedImage?.cdn_url || getProductPrimaryImage(product);
   const galleryImages = product.images || [];
+  const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
+  const [showZoom, setShowZoom] = useState(false);
+  const imgRef = useRef(null);
+
+  const handleMouseMove = useCallback((e) => {
+    if (!imgRef.current) return;
+    const rect = imgRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomPos({ x, y });
+  }, []);
 
   return (
     <div className="w-full flex flex-col items-center">
-      <div className="w-full max-w-md aspect-square rounded-3xl bg-gradient-to-tr from-brand-pink to-brand-coral flex flex-col items-center justify-center relative animate-fade-in-up shadow-[0_25px_50px_-12px_rgba(44,35,31,0.22)] overflow-hidden group">
+      <div
+        ref={imgRef}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setShowZoom(true)}
+        onMouseLeave={() => setShowZoom(false)}
+        className="w-full max-w-md aspect-square rounded-3xl bg-gradient-to-tr from-brand-pink to-brand-coral flex flex-col items-center justify-center relative animate-fade-in-up shadow-[0_25px_50px_-12px_rgba(44,35,31,0.22)] overflow-hidden group cursor-crosshair"
+      >
         <div className="product-card-image-skeleton" aria-hidden="true" />
-        {imageUrl ? <img src={imageUrl} alt={product.name} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover product-card-loaded-image" /> : null}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        {imageUrl ? (
+          <>
+            <img src={imageUrl} alt={product.name} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover product-card-loaded-image" />
+            {showZoom && imageUrl ? (
+              <div
+                className="absolute inset-0 z-20 pointer-events-none"
+                style={{
+                  backgroundImage: `url(${imageUrl})`,
+                  backgroundSize: '200%',
+                  backgroundPosition: `${zoomPos.x}% ${zoomPos.y}%`,
+                }}
+              />
+            ) : null}
+          </>
+        ) : null}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10"></div>
 
         {product.onSale ? (
-          <span className="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white text-brand-coral text-xs sm:text-sm font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded-md uppercase tracking-widest shadow-lg z-10">
+          <span className="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white text-brand-coral text-xs sm:text-sm font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded-md uppercase tracking-widest shadow-lg z-30">
             Sale
           </span>
         ) : null}
@@ -205,6 +236,16 @@ function ReviewsSection({ product }) {
     setSubmitting(true);
     setSubmitError('');
     setSubmitSuccess(false);
+    if (!formTitle.trim() && !formBody.trim()) {
+      setSubmitError('Please provide a title or review text.');
+      setSubmitting(false);
+      return;
+    }
+    if (formTitle.trim() && formTitle.trim().length < 3) {
+      setSubmitError('Title must be at least 3 characters.');
+      setSubmitting(false);
+      return;
+    }
     try {
       const res = await fetch('/api/reviews', {
         method: 'POST',
@@ -294,6 +335,37 @@ function ReviewsSection({ product }) {
           ))}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function MobileAddToCart({ isOutOfStock, selectedVariant, quantity, product }) {
+  const { addToCart } = useShop();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const scrollY = window.scrollY;
+      const threshold = 500;
+      setVisible(scrollY > threshold);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <div className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] transition-transform duration-300 sm:hidden ${visible ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div className="flex items-center gap-3 max-w-md mx-auto">
+        <QuantitySelector quantity={quantity} onDecrease={() => {}} onIncrease={() => {}} />
+        <button
+          onClick={() => !isOutOfStock && selectedVariant && addToCart(product, selectedVariant, quantity)}
+          disabled={isOutOfStock}
+          className="flex-1 h-11 rounded-xl bg-gradient-to-r from-brand-pink to-brand-coral text-white text-sm font-bold uppercase tracking-widest disabled:opacity-50"
+        >
+          <ShoppingCart className="w-4 h-4 inline mr-2" />
+          {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+        </button>
+      </div>
     </div>
   );
 }
@@ -473,6 +545,8 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
             <div className="mt-4 text-xs text-gray-500 font-sans flex items-center gap-1.5">
               <Truck size={12} /> Est. delivery: 3–5 business days
             </div>
+
+            <MobileAddToCart isOutOfStock={isOutOfStock} selectedVariant={selectedVariant} quantity={quantity} product={product} />
 
             <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm text-gray-600 font-sans">
               <TrustItem icon={Truck} text="Ships across Pakistan" />

@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, FilterX, Percent, PencilLine, Plus, Star, Trash2, X } from 'lucide-react';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { PageHeader } from '../components/PageHeader';
+import { Pagination } from '../components/Pagination';
 import { useConfirm } from '../components/ConfirmProvider';
 import { del, get } from '../lib/api';
 
@@ -53,6 +55,8 @@ export function ProductsPage() {
   const [category, setCategory] = useState('all');
   const [status, setStatus] = useState('all');
   const [sortBy, setSortBy] = useState('name-asc');
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const confirm = useConfirm();
@@ -97,8 +101,12 @@ export function ProductsPage() {
     return sortProducts(nextProducts, sortBy);
   }, [products, query, category, status, sortBy]);
 
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  const paginatedProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
   const hasActiveFilters = query.trim() || category !== 'all' || status !== 'all' || sortBy !== 'name-asc';
-  const clearFilters = () => { setQuery(''); setCategory('all'); setStatus('all'); setSortBy('name-asc'); };
+  const clearFilters = () => { setQuery(''); setCategory('all'); setStatus('all'); setSortBy('name-asc'); setPage(1); };
+
+  useEffect(() => { setPage(1); }, [query, category, status, sortBy]);
 
   const handleDelete = async (productId) => {
     const ok = await confirm({ title: 'Delete product?', message: 'This removes the product and its images if it has no order history.', confirmLabel: 'Delete' });
@@ -113,6 +121,7 @@ export function ProductsPage() {
 
   return (
     <div className="page-stack products-minimal-page">
+      <AdminBreadcrumbs items={[{ label: 'Products' }]} />
       <PageHeader
         title="Products"
         actions={
@@ -148,16 +157,16 @@ export function ProductsPage() {
       <section className="panel panel-compact">
         <div className="table-wrap">
           <table className="dense-table responsive-table product-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th className="align-right">Price</th>
-                <th className="align-right">Variants</th>
-                <th className="align-right">Status</th>
-                <th className="icon-column" />
-                <th className="icon-column" />
-              </tr>
-            </thead>
+              <thead>
+                <tr>
+                  <th className="sortable-th" onClick={() => setSortBy(sortBy === 'name-asc' ? 'name-desc' : 'name-asc')}>Product {sortBy.startsWith('name') ? (sortBy === 'name-asc' ? '▲' : '▼') : ''}</th>
+                  <th className="align-right sortable-th" onClick={() => setSortBy(sortBy === 'price-low' ? 'price-high' : 'price-low')}>Price {sortBy.startsWith('price') ? (sortBy === 'price-low' ? '▲' : '▼') : ''}</th>
+                  <th className="align-right">Variants</th>
+                  <th className="align-right">Status</th>
+                  <th className="icon-column" />
+                  <th className="icon-column" />
+                </tr>
+              </thead>
             <tbody>
               {loading ? (
                 Array.from({ length: 8 }, (_, index) => (
@@ -172,7 +181,7 @@ export function ProductsPage() {
                 ))
               ) : filteredProducts.length === 0 ? (
                 <tr><td colSpan="6" className="empty-cell">No products found.</td></tr>
-              ) : filteredProducts.map((product) => (
+              ) : paginatedProducts.map((product) => (
                 <tr key={product.id}>
                   <td data-label="Product">
                     <div className="table-title-cell table-title-cell-compact">
@@ -231,6 +240,8 @@ export function ProductsPage() {
           </table>
         </div>
       </section>
+
+      <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 }

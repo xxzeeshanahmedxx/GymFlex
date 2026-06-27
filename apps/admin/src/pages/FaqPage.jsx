@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { GripVertical, Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, post, put } from '../lib/api';
@@ -14,9 +14,13 @@ export function FaqPage() {
   const [category, setCategory] = useState('General');
   const [sortOrder, setSortOrder] = useState('0');
   const [editingId, setEditingId] = useState(null);
+  const [reordered, setReordered] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
 
   const loadItems = useCallback(async () => {
-    try { const d = await get('/api/faq-admin'); setItems(d.items || []); } catch (err) { setError(err.message); }
+    try { const d = await get('/api/faq-admin'); setItems(d.items || []); setReordered(false); } catch (err) { setError(err.message); }
   }, []);
 
   useEffect(() => { loadItems(); }, [loadItems]);
@@ -43,6 +47,30 @@ export function FaqPage() {
     try { await del(`/api/faq-admin?id=${id}`); setMessage('FAQ deleted.'); await loadItems(); } catch (err) { setError(err.message); }
   };
 
+  const handleDragStart = (index) => { dragItem.current = index; };
+  const handleDragEnter = (index) => { dragOverItem.current = index; };
+  const handleDragEnd = () => {
+    if (dragItem.current === dragOverItem.current) { dragItem.current = null; dragOverItem.current = null; return; }
+    const updated = [...items];
+    const [removed] = updated.splice(dragItem.current, 1);
+    updated.splice(dragOverItem.current, 0, removed);
+    setItems(updated);
+    setReordered(true);
+    dragItem.current = null;
+    dragOverItem.current = null;
+  };
+
+  const saveOrder = async () => {
+    setSavingOrder(true);
+    setError(''); setMessage('');
+    try {
+      await post('/api/faq-admin/batch-order', { items: items.map((item, i) => ({ id: item.id, sort_order: i })) });
+      setMessage('Order saved.');
+      setReordered(false);
+    } catch (err) { setError(err.message); }
+    finally { setSavingOrder(false); }
+  };
+
   return (
     <div className="page-stack">
       <PageHeader title="FAQ Manager" actions={<button className="icon-action-link" onClick={loadItems}><RefreshCw size={16} /></button>} />
@@ -66,11 +94,20 @@ export function FaqPage() {
       <section className="panel">
         <div className="table-wrap">
           <table className="responsive-table dense-table">
-            <thead><tr><th>Q</th><th>Answer</th><th>Category</th><th className="icon-column" /></tr></thead>
+            <thead><tr><th className="icon-column" /><th>Q</th><th>Answer</th><th>Category</th><th className="icon-column" /></tr></thead>
             <tbody>
-              {items.length === 0 ? <tr><td colSpan="4" className="empty-cell">No FAQs yet.</td></tr>
-                : items.map((item) => (
-                  <tr key={item.id}>
+              {items.length === 0 ? <tr><td colSpan="5" className="empty-cell">No FAQs yet.</td></tr>
+                : items.map((item, index) => (
+                  <tr
+                    key={item.id}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragEnter={() => handleDragEnter(index)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                    className="drag-row"
+                  >
+                    <td className="icon-column drag-handle-cell"><GripVertical size={14} className="drag-handle" /></td>
                     <td data-label="Question"><strong>{item.question}</strong></td>
                     <td data-label="Answer" style={{ maxWidth: 300 }}>{item.answer}</td>
                     <td data-label="Category"><span className="status-pill">{item.category}</span></td>
@@ -83,6 +120,13 @@ export function FaqPage() {
             </tbody>
           </table>
         </div>
+        {reordered ? (
+          <div className="panel-footer">
+            <button className="button button-primary button-compact" onClick={saveOrder} disabled={savingOrder}>
+              {savingOrder ? 'Saving...' : 'Save order'}
+            </button>
+          </div>
+        ) : null}
       </section>
     </div>
   );

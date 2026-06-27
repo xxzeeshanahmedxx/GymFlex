@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/useShop';
 import { getEffectivePrice } from '../lib/product-utils';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { Copy, Check } from 'lucide-react';
+import { ChevronDown, Copy, Check } from 'lucide-react';
 import { fetchHomepageSettings } from '../lib/storefront-api';
 
 const DEFAULT_SHIPPING_FEE = 250;
@@ -277,6 +277,8 @@ export default function Checkout() {
     return <OrderConfirmedState orderNumber={submittedOrder.orderNumber} />;
   }
 
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
+
   return (
     <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 sm:py-14 font-sans animate-fade-in-up flex-grow">
       <div className="mb-8 text-center">
@@ -285,6 +287,15 @@ export default function Checkout() {
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1.15fr,0.85fr] lg:items-start">
+        {/* Mobile order summary toggle */}
+        <button type="button" onClick={() => setMobileSummaryOpen(!mobileSummaryOpen)} className="lg:hidden rounded-2xl border border-white/10 bg-[#1a1a1a] p-4 text-left flex items-center justify-between">
+          <div>
+            <span className="text-sm font-bold text-white uppercase tracking-widest">Order Summary</span>
+            <span className="block text-xs text-gray-400 mt-0.5">{cart.length} item{cart.length !== 1 ? 's' : ''} · Rs. {orderTotal}</span>
+          </div>
+          <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${mobileSummaryOpen ? 'rotate-180' : ''}`} />
+        </button>
+        <div className={`lg:contents ${mobileSummaryOpen ? 'block' : 'hidden lg:block'}`}>
         <section className="rounded-3xl border border-white/10 bg-[#111] p-6 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] sm:p-8">
           <h2 className="text-xl font-heading font-[850] text-white mb-6 uppercase tracking-wider">Delivery details</h2>
 
@@ -444,6 +455,7 @@ export default function Checkout() {
             {isSubmitting ? 'Placing...' : 'Place order'}
           </button>
         </section>
+        </div>
       </form>
     </div>
   );

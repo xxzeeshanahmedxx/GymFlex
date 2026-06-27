@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Check, Download, Eye, FilterX } from 'lucide-react';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { PageHeader } from '../components/PageHeader';
+import { Pagination } from '../components/Pagination';
+import { useConfirm } from '../components/ConfirmProvider';
 import { get, post } from '../lib/api';
 import { downloadBulkOrdersPdf } from '../lib/orderPdf';
 
@@ -13,6 +16,9 @@ export function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('all');
+  const [orderSort, setOrderSort] = useState('date-desc');
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
   const [error, setError] = useState('');
   const [bulkDownloading, setBulkDownloading] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -28,21 +34,36 @@ export function OrdersPage() {
   const filteredOrders = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return orders.filter((order) => {
-      const matchesQuery = !normalizedQuery || [
-        order.order_number,
-        order.first_name,
-        order.last_name,
-        order.city,
-        order.phone,
-      ].some((value) => String(value || '').toLowerCase().includes(normalizedQuery));
+    return orders
+      .filter((order) => {
+        const matchesQuery = !normalizedQuery || [
+          order.order_number,
+          order.first_name,
+          order.last_name,
+          order.city,
+          order.phone,
+        ].some((value) => String(value || '').toLowerCase().includes(normalizedQuery));
 
-      const matchesStatus = status === 'all' || order.status === status;
-      return matchesQuery && matchesStatus;
-    });
-  }, [orders, query, status]);
+        const matchesStatus = status === 'all' || order.status === status;
+        return matchesQuery && matchesStatus;
+      })
+      .sort((a, b) => {
+        switch (orderSort) {
+          case 'date-asc': return new Date(a.created_at) - new Date(b.created_at);
+          case 'total-desc': return b.total - a.total;
+          case 'total-asc': return a.total - b.total;
+          case 'status': return (a.status || '').localeCompare(b.status || '');
+          case 'date-desc':
+          default: return new Date(b.created_at) - new Date(a.created_at);
+        }
+      });
+  }, [orders, query, status, orderSort]);
 
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
+  const paginatedOrders = filteredOrders.slice((page - 1) * pageSize, page * pageSize);
   const hasActiveFilters = query.trim() || status !== 'all';
+
+  useEffect(() => { setPage(1); }, [query, status, orderSort]);
 
   const toggleSelect = useCallback((orderId) => {
     setSelectedIds((prev) => {
@@ -61,9 +82,13 @@ export function OrdersPage() {
     }
   }, [filteredOrders, selectedIds]);
 
+  const confirm = useConfirm();
+
   const applyBulkStatus = async () => {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
+    const ok = await confirm({ title: `Set ${bulkStatus} for ${ids.length} orders?`, message: `This will change the status of ${ids.length} order${ids.length === 1 ? '' : 's'} to "${bulkStatus}".`, confirmLabel: `Set ${bulkStatus}` });
+    if (!ok) return;
     setBulkUpdating(true);
     setError('');
     try {
@@ -97,6 +122,7 @@ export function OrdersPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Orders' }]} />
       <PageHeader title="Orders" />
       {error ? <div className="error-box">{error}</div> : null}
 
@@ -137,6 +163,8 @@ export function OrdersPage() {
         </div>
       ) : null}
 
+      <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+
       <section className="panel">
         <div className="table-wrap">
           <table className="responsive-table order-table">
@@ -148,11 +176,11 @@ export function OrdersPage() {
                     {selectedIds.size > 0 ? <Check size={12} /> : null}
                   </label>
                 </th>
-                <th>Order</th>
+                <th className="sortable-th" onClick={() => setOrderSort(orderSort === 'date-asc' ? 'date-desc' : 'date-asc')}>Order {orderSort.startsWith('date') ? (orderSort === 'date-desc' ? '↓' : '↑') : ''}</th>
                 <th>Customer</th>
                 <th>City</th>
-                <th>Status</th>
-                <th>Total</th>
+                <th className="sortable-th" onClick={() => setOrderSort('status')}>Status {orderSort === 'status' ? '↓' : ''}</th>
+                <th className="sortable-th" onClick={() => setOrderSort(orderSort === 'total-desc' ? 'total-asc' : 'total-desc')}>Total {orderSort.startsWith('total') ? (orderSort === 'total-desc' ? '↓' : '↑') : ''}</th>
                 <th>Items</th>
                 <th className="icon-column" />
               </tr>
@@ -161,7 +189,7 @@ export function OrdersPage() {
               {filteredOrders.length === 0 ? (
                 <tr><td colSpan="8" className="empty-cell">No orders found.</td></tr>
               ) : (
-                filteredOrders.map((order) => (
+                paginatedOrders.map((order) => (
                   <tr key={order.id} className={`clickable-row ${selectedIds.has(order.id) ? 'row-selected' : ''}`} onClick={(e) => { if (!e.target.closest('a, button, input, label')) navigate(`/orders/${order.id}`); }}>
                     <td className="icon-column" data-label="">
                       <label className="checkbox-label">
