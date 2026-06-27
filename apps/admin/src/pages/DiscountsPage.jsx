@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useConfirm } from '../components/ConfirmProvider';
 import { Percent, Plus, Trash2 } from 'lucide-react';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 
 const emptyForm = { code: '', type: 'percentage', value: '', minOrderAmount: '0', maxUses: '', expiresAt: '', isActive: true };
 
@@ -101,6 +102,7 @@ export function DiscountsPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Discounts' }]} />
       <section className="page-header">
         <div>
           <h1 className="page-title">Discount Codes</h1>

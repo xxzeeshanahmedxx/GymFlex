@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { get, post } from '../lib/api';
 
 export function LoyaltyPage() {
@@ -40,6 +41,7 @@ export function LoyaltyPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Loyalty' }]} />
       <PageHeader
         title="Loyalty Points"
         actions={

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { get } from '../lib/api';
 
 export function ActivityLogPage() {
@@ -20,6 +21,7 @@ export function ActivityLogPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Activity Log' }]} />
       <PageHeader
         title="Activity Log"
         actions={

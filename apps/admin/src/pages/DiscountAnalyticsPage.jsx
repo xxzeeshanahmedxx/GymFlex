@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { get } from '../lib/api';
 
 export function DiscountAnalyticsPage() {
@@ -15,6 +16,7 @@ export function DiscountAnalyticsPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Discount Analytics' }]} />
       <PageHeader title="Discount Analytics" actions={<button className="icon-action-link" onClick={load}><RefreshCw size={16} /></button>} />
       {error ? <div className="error-box">{error}</div> : null}
       {data ? (

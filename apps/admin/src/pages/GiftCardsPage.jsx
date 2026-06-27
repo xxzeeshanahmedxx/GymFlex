@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { get, post } from '../lib/api';
 
 export function GiftCardsPage() {
@@ -32,6 +33,7 @@ export function GiftCardsPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Gift Cards' }]} />
       <PageHeader title="Gift Cards" actions={<button className="icon-action-link" onClick={loadCards}><RefreshCw size={16} /></button>} />
       {error ? <div className="error-box">{error}</div> : null}
       {message ? <div className="success-box">{message}</div> : null}

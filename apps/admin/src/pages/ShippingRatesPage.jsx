@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, post, put } from '../lib/api';
 
@@ -59,6 +60,7 @@ export function ShippingRatesPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Shipping Rates' }]} />
       <PageHeader
         title="Shipping Rates"
         actions={<button className="icon-action-link" type="button" onClick={loadRates} aria-label="Refresh" title="Refresh"><RefreshCw size={16} /></button>}

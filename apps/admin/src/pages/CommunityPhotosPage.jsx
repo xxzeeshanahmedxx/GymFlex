@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, put } from '../lib/api';
 
@@ -27,6 +28,7 @@ export function CommunityPhotosPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Community Photos' }]} />
       <PageHeader title="Community Photos" actions={<button className="icon-action-link" onClick={load}><RefreshCw size={16} /></button>} />
       {error ? <div className="error-box">{error}</div> : null}
       {message ? <div className="success-box">{message}</div> : null}

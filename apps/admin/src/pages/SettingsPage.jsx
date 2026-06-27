@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, ImageUp, Trash2, X } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { api, get, put } from '../lib/api';
 
 const defaultHeroBanner = {
@@ -195,6 +196,7 @@ export function SettingsPage() {
 
   return (
     <div className="page-stack settings-desktop-page">
+      <AdminBreadcrumbs items={[{ label: 'Settings' }]} />
       <PageHeader title="Settings" />
       {error ? <div className="error-box">{error}</div> : null}
       {message ? <div className="success-box">{message}</div> : null}

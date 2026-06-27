@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw, Save } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { get, post } from '../lib/api';
 
 export function MaintenancePage() {
@@ -30,6 +31,7 @@ export function MaintenancePage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Maintenance' }]} />
       <PageHeader
         title="Maintenance Mode"
         actions={<button className="icon-action-link" onClick={loadSettings} aria-label="Refresh"><RefreshCw size={16} /></button>}

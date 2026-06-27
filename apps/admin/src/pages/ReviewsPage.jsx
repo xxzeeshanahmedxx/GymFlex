@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Star, ThumbsUp, Trash2, X } from 'lucide-react';
 import { del, get, patch } from '../lib/api';
 import { useConfirm } from '../components/ConfirmProvider';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -53,6 +54,7 @@ export function ReviewsPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Reviews' }]} />
       <section className="page-header">
         <div>
           <h1 className="page-title">Reviews</h1>

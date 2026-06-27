@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Download, Upload } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 
 export function BulkImportPage() {
   const [file, setFile] = useState(null);
@@ -34,6 +35,7 @@ export function BulkImportPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Bulk Import / Export' }]} />
       <PageHeader title="Bulk Import / Export" />
       {error ? <div className="error-box">{error}</div> : null}
       {message ? <div className="success-box">{message}</div> : null}

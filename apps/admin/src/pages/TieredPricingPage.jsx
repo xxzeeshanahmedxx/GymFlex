@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, post, put } from '../lib/api';
 
@@ -74,6 +75,7 @@ export function TieredPricingPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Tiered Pricing' }]} />
       <PageHeader
         title="Tiered Pricing"
         actions={

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { AdminBreadcrumbs } from '../components/AdminBreadcrumbs';
 import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, post } from '../lib/api';
 
@@ -37,6 +38,7 @@ export function BundlesPage() {
 
   return (
     <div className="page-stack">
+      <AdminBreadcrumbs items={[{ label: 'Product Bundles' }]} />
       <PageHeader title="Product Bundles" actions={<button className="icon-action-link" onClick={loadBundles}><RefreshCw size={16} /></button>} />
       {error ? <div className="error-box">{error}</div> : null}
       {message ? <div className="success-box">{message}</div> : null}
