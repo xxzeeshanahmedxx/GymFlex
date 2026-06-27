@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Download, Printer, Save, Trash2, Truck } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { useConfirm } from '../components/ConfirmProvider';
@@ -12,6 +12,7 @@ const itemStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelle
 
 export function OrderDetailsPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const confirm = useConfirm();
   const [data, setData] = useState(null);
   const [status, setStatus] = useState('new');
@@ -101,7 +102,7 @@ export function OrderDetailsPage() {
     setMessage('');
     try {
       await del(`/api/order?id=${id}`);
-      window.location.href = '/orders';
+      navigate('/orders');
     } catch (deleteError) {
       setError(deleteError.message || 'Failed to delete order');
     }

@@ -71,7 +71,8 @@ export default function SearchResults() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Search products..."
-              className="w-full rounded-2xl border border-white/20 bg-[#1a1a1a] pl-12 pr-12 py-3.5 text-white outline-none transition focus:border-brand-pink focus:bg-[#222]"
+              autoComplete="off"
+              className="form-input w-full rounded-2xl border border-white/20 bg-[#1a1a1a] pl-12 pr-12 py-3.5 text-white outline-none transition focus:border-brand-pink focus:bg-[#222]"
             />
             {inputValue ? (
               <button type="button" onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-white transition-colors">

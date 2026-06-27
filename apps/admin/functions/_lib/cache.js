@@ -13,17 +13,24 @@ export async function purgeEverything(context, reason = 'admin-change') {
     return { ok: false, skipped: true, reason: 'Missing Cloudflare purge credentials' };
   }
 
-  const response = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${token}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({ purge_everything: true }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ purge_everything: true }),
+      signal: controller.signal,
+    });
 
-  const data = await response.json().catch(() => null);
-  return { ok: response.ok && data?.success !== false, status: response.status, reason, data };
+    const data = await response.json().catch(() => null);
+    return { ok: response.ok && data?.success !== false, status: response.status, reason, data };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export function scheduleCachePurge(context, reason) {

@@ -82,7 +82,7 @@ export default function FitFinderModal({ onClose }) {
           </button>
         </div>
 
-        {!result ? (
+        {!result && step < questions.length ? (
           <>
             <div className="flex justify-center gap-1.5 mb-6">
               {questions.map((q, i) => (
@@ -125,12 +125,21 @@ export default function FitFinderModal({ onClose }) {
               </button>
             </div>
           </>
-        ) : (
+        ) : result ? (
           <div className="text-center py-6">
             <div className="text-4xl mb-4">🎯</div>
             <h4 className="text-lg font-bold text-white mb-2">We found your match!</h4>
             <p className="text-gray-400 mb-6">{result.text}</p>
             <button onClick={handleReset} className="text-sm text-brand-pink hover:underline">Retake quiz</button>
+          </div>
+        ) : (
+          <div className="text-center py-6">
+            <div className="text-4xl mb-4">🤷</div>
+            <h4 className="text-lg font-bold text-white mb-2">No match found</h4>
+            <p className="text-gray-400 mb-6">We don&rsquo;t have a recommendation for that combination yet. Try different answers!</p>
+            <button onClick={handleReset} className="px-6 py-2.5 rounded-xl bg-brand-pink text-black text-sm font-bold uppercase tracking-widest hover:bg-brand-green-dark transition-colors">
+              Start over
+            </button>
           </div>
         )}
       </div>

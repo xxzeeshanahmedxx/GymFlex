@@ -1,16 +1,37 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Camera, Sparkles, X } from 'lucide-react';
 
 export default function TryOnModal({ product, onClose }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
+  const previewRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewRef.current) {
+        URL.revokeObjectURL(previewRef.current);
+      }
+    };
+  }, []);
 
   const handleFile = (e) => {
     const f = e.target.files?.[0];
     if (f) {
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+      const url = URL.createObjectURL(f);
       setFile(f);
-      setPreview(URL.createObjectURL(f));
+      setPreview(url);
+      previewRef.current = url;
     }
+  };
+
+  const handleRemove = () => {
+    if (previewRef.current) {
+      URL.revokeObjectURL(previewRef.current);
+      previewRef.current = null;
+    }
+    setFile(null);
+    setPreview(null);
   };
 
   return (
@@ -29,7 +50,7 @@ export default function TryOnModal({ product, onClose }) {
           {preview ? (
             <div className="relative">
               <img src={preview} alt="Your photo" className="max-h-64 mx-auto rounded-xl object-cover" />
-              <button onClick={() => { setFile(null); setPreview(null); }} className="mt-3 text-xs text-brand-pink hover:underline font-bold uppercase tracking-widest">Remove</button>
+              <button onClick={handleRemove} className="mt-3 text-xs text-brand-pink hover:underline font-bold uppercase tracking-widest">Remove</button>
             </div>
           ) : (
             <label className="cursor-pointer flex flex-col items-center gap-2">

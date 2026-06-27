@@ -34,7 +34,7 @@ export function DashboardPage() {
       </div>
       {error ? <div className="error-box">{error}</div> : null}
 
-      {!stats ? (
+      {error ? null : !stats ? (
         <div className="stats-grid">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="stat-card stat-card-skeleton"><div className="skeleton skeleton-line short" /><div className="skeleton skeleton-field" /></div>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { PackageCheck, Printer, Search, XCircle } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
-const inputClassName = 'w-full rounded-2xl border border-white/20 bg-[#1a1a1a] px-4 py-3.5 font-semibold text-white outline-none transition focus:border-brand-pink focus:bg-[#222]';
+const inputClassName = 'form-input w-full rounded-2xl border border-white/20 bg-[#1a1a1a] px-4 py-3.5 font-semibold text-white outline-none transition focus:border-brand-pink focus:bg-[#222]';
 const statusLabels = {
   new: 'Order received',
   confirmed: 'Confirmed',
@@ -59,11 +59,11 @@ export default function TrackOrder() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
               Order number
-              <input value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} className={`${inputClassName} mt-2`} placeholder="ORD-20260620-1234" required />
+              <input value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} className={`${inputClassName} mt-2`} placeholder="ORD-20260620-1234" inputMode="text" autoComplete="off" required />
             </label>
             <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
               Phone
-              <input value={phone} onChange={(event) => setPhone(event.target.value)} className={`${inputClassName} mt-2`} placeholder="3001234567" required />
+              <input value={phone} onChange={(event) => setPhone(event.target.value)} className={`${inputClassName} mt-2`} placeholder="3001234567" inputMode="numeric" autoComplete="tel" required />
             </label>
           </div>
           {error ? <div className="mt-5 rounded-2xl border border-red-200 bg-red-50/10 px-4 py-3 text-sm font-semibold text-red-400">{error}</div> : null}

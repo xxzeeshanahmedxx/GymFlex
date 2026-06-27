@@ -16,16 +16,21 @@ export default function CountdownTimer({ endTime, onExpire, compact }) {
   const [time, setTime] = useState(() => getTimeRemaining(endTime));
 
   useEffect(() => {
-    const tick = () => {
-      const remaining = getTimeRemaining(endTime);
+    const remaining = getTimeRemaining(endTime);
+    if (remaining.total <= 0) {
       setTime(remaining);
-      if (remaining.total <= 0) {
+      onExpire?.();
+      return;
+    }
+    setTime(remaining);
+    const interval = setInterval(() => {
+      const r = getTimeRemaining(endTime);
+      setTime(r);
+      if (r.total <= 0) {
         onExpire?.();
         clearInterval(interval);
       }
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
+    }, 1000);
     return () => clearInterval(interval);
   }, [endTime, onExpire]);
 

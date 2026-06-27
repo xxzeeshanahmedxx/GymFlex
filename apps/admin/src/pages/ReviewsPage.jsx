@@ -13,6 +13,7 @@ export function ReviewsPage() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState('');
   const confirm = useConfirm();
 
   const loadReviews = useCallback(async () => {
@@ -31,22 +32,30 @@ export function ReviewsPage() {
   useEffect(() => { loadReviews(); }, [loadReviews]);
 
   const toggleApproval = async (review) => {
+    if (saving) return;
+    setSaving(review.id);
     try {
-      await patch('/api/reviews-admin', { id: review.id, isApproved: !review.is_approved });
+      await patch('/api/reviews-admin', { id: review.id, is_approved: !review.is_approved });
       await loadReviews();
     } catch (patchError) {
       setError(patchError.message || 'Failed to update review');
+    } finally {
+      setSaving('');
     }
   };
 
   const deleteReview = async (reviewId) => {
+    if (saving) return;
     const ok = await confirm({ title: 'Delete review?', message: 'This cannot be undone.', confirmLabel: 'Delete' });
     if (!ok) return;
+    setSaving(reviewId);
     try {
       await del(`/api/reviews-admin?id=${reviewId}`);
       await loadReviews();
     } catch (delError) {
       setError(delError.message || 'Failed to delete review');
+    } finally {
+      setSaving('');
     }
   };
 
@@ -109,10 +118,10 @@ export function ReviewsPage() {
                   </td>
                   <td data-label="Actions">
                     <div className="flex gap-2">
-                      <button className="icon-action-link" onClick={() => toggleApproval(review)} title={review.is_approved ? 'Unapprove' : 'Approve'}>
+                      <button className="icon-action-link" onClick={() => toggleApproval(review)} disabled={saving === review.id} title={review.is_approved ? 'Unapprove' : 'Approve'}>
                         <ThumbsUp size={15} className={review.is_approved ? 'text-green-400' : ''} />
                       </button>
-                      <button className="icon-action-link icon-action-danger" onClick={() => deleteReview(review.id)} title="Delete">
+                      <button className="icon-action-link icon-action-danger" onClick={() => deleteReview(review.id)} disabled={saving === review.id} title="Delete">
                         <Trash2 size={15} />
                       </button>
                     </div>

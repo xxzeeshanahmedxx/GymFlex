@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Menu, Moon, Ruler, Search, ShoppingBag, Sun, X, ChevronDown, Gift, Users, HelpCircle } from 'lucide-react';
 import { useShop } from '../context/useShop';
 import { fetchCategories, fetchHomepageSettings } from '../lib/storefront-api';
-import FitFinderModal from './FitFinderModal';
+
+const FitFinderModal = lazy(() => import('./FitFinderModal'));
 
 const fallbackNavigation = [
   { label: 'Shop All', to: '/shop' },
@@ -88,27 +89,27 @@ export default function Navbar() {
     <>
       <nav className={`sticky top-0 z-40 w-full bg-black/95 border-b border-brand-pink/20 font-sans transition-all duration-300 backdrop-blur-xl ${scrolled ? 'shadow-2xl shadow-black/40' : 'shadow-none'}`}>
         <div className="max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 sm:h-20 pt-1 sm:pt-2 relative">
-            <div className="w-1/4 sm:w-1/3 flex items-center justify-start sm:hidden">
-              <button onClick={() => setIsMobileMenuOpen(true)} className="mobile-menu-button p-2 text-white hover:text-brand-pink transition-colors" aria-label="Open menu">
-                <Menu className="w-6 h-6" />
+          <div className="flex justify-between items-center h-16 sm:h-20 pt-1 sm:pt-2 relative gap-0 sm:gap-2">
+            <div className="flex items-center justify-start sm:hidden flex-none min-w-0">
+              <button onClick={() => setIsMobileMenuOpen(true)} className="mobile-menu-button flex items-center justify-center min-w-[44px] min-h-[44px] text-white hover:text-brand-pink transition-colors" aria-label="Open menu">
+                <Menu className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="hidden sm:block sm:w-1/3"></div>
+            <div className="hidden sm:block flex-none w-8"></div>
 
-            <div className="w-2/4 sm:w-1/3 flex justify-center">
-              <Link to="/" className="text-2xl sm:text-3xl md:text-4xl font-heading font-[850] text-white tracking-widest hover:text-brand-pink transition-colors duration-300 text-center whitespace-nowrap">GYMFLEX</Link>
+            <div className="flex justify-center flex-auto min-w-0">
+              <Link to="/" className="text-lg sm:text-2xl md:text-3xl font-heading font-[850] text-white tracking-widest hover:text-brand-pink transition-colors duration-300 text-center truncate">GYMFLEX</Link>
             </div>
 
-            <div className="w-1/4 sm:w-1/3 flex justify-end items-center space-x-3 sm:space-x-6 pr-0 sm:pr-8">
-              <Link to="/search" className="text-white hover:text-brand-pink transition-colors p-2" aria-label="Search">
+            <div className="flex justify-end items-center gap-1 sm:gap-3 lg:gap-5 flex-none pl-2 sm:pl-0 pr-0 sm:pr-8 safe-area-right">
+              <Link to="/search" className="header-action-btn" aria-label="Search">
                 <Search className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
-              <button onClick={toggleTheme} className="text-white hover:text-brand-pink transition-colors p-2 hidden sm:inline-flex" aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+              <button onClick={toggleTheme} className="header-action-btn hidden sm:inline-flex" aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
                 {theme === 'dark' ? <Sun className="w-5 h-5 sm:w-6 sm:h-6" /> : <Moon className="w-5 h-5 sm:w-6 sm:h-6" />}
               </button>
-              <Link to="/wishlist" className="text-white hover:text-brand-pink transition-colors relative" aria-label="Wishlist">
+              <Link to="/wishlist" className="header-action-btn relative" aria-label="Wishlist">
                 <Heart key={wishlist.length} className={`heart-pulse w-5 h-5 sm:w-6 sm:h-6 ${wishlist.length > 0 ? 'text-brand-pink' : ''}`} />
                 {wishlist.length > 0 ? <span key={wishlist.length} className="badge-bounce absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-brand-pink text-black text-[9px] font-bold px-1 leading-none">{wishlist.length}</span> : null}
               </Link>
@@ -137,6 +138,9 @@ export default function Navbar() {
             <span className="mobile-sidebar-section-label">Shop</span>
             {navigation.map((item) => <NavigationLink key={item.to} item={item} mobile onClick={() => setIsMobileMenuOpen(false)} />)}
 
+            <Link to="/search" className="mobile-sidebar-link" onClick={() => setIsMobileMenuOpen(false)}>
+              <Search size={16} className="mr-3" />Search
+            </Link>
             <span className="mobile-sidebar-section-label">More</span>
             <MobileSidebarSubnav icon={<Gift size={16} />} label="Offers">
               <Link to="/sale" className="mobile-sidebar-sublink" onClick={() => setIsMobileMenuOpen(false)}>Sale</Link>
@@ -157,7 +161,7 @@ export default function Navbar() {
           </nav>
         </aside>
       </div>
-      {showFitFinder ? <FitFinderModal onClose={() => setShowFitFinder(false)} /> : null}
+      {showFitFinder ? <Suspense fallback={null}><FitFinderModal onClose={() => setShowFitFinder(false)} /></Suspense> : null}
     </>
   );
 }

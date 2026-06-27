@@ -14,8 +14,8 @@ function DrawerShell({ isOpen, title, onClose, children, footer }) {
         <div className="w-full h-full bg-white flex flex-col">
           <div className="px-6 py-8 border-b border-gray-100 flex justify-between items-center bg-gray-50">
             <h2 className="text-2xl font-heading font-[850] uppercase tracking-widest text-gray-900">{title}</h2>
-            <button onClick={onClose} className="p-2 bg-white hover:bg-gray-100 rounded-full transition-colors shadow-sm" aria-label="Close drawer">
-              <X className="w-6 h-6 text-gray-600" />
+            <button onClick={onClose} className="drawer-close-btn bg-white hover:bg-gray-100 rounded-full transition-colors shadow-sm" aria-label="Close drawer">
+              <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
             </button>
           </div>
 

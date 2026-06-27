@@ -27,6 +27,7 @@ export function normalizeProduct(row) {
     is_active: Boolean(row.is_active),
     is_featured: Boolean(row.is_featured),
     sort_order: Number(row.sort_order || 0),
+    created_at: row.created_at || null,
     primary_image_url: row.primary_image_url || null,
     video_url: row.video_url || '',
     meta_title: row.meta_title || '',

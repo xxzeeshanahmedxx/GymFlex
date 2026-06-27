@@ -50,8 +50,8 @@ export async function onRequestDelete(context) {
   const image = await context.env.STORE_DB.prepare('SELECT * FROM product_images WHERE id = ? AND product_id = ? LIMIT 1').bind(imageId, productId).first();
   if (!image) return error('Image not found', 404);
 
-  await context.env.STORE_BUCKET.delete(image.r2_key);
   await context.env.STORE_DB.prepare('DELETE FROM product_images WHERE id = ?').bind(imageId).run();
+  try { await context.env.STORE_BUCKET.delete(image.r2_key); } catch { /* orphan-safe: DB record already gone */ }
 
   await normalizeProductImageOrdering(context.env.STORE_DB, productId);
 

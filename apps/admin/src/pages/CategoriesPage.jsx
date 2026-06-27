@@ -12,6 +12,7 @@ export function CategoriesPage() {
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [saving, setSaving] = useState(false);
   const confirm = useConfirm();
 
   const loadCategories = async () => {
@@ -29,8 +30,10 @@ export function CategoriesPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (saving) return;
     setError('');
     setMessage('');
+    setSaving(true);
     try {
       const payload = { ...form, sort_order: Number(form.sort_order) };
       if (form.id) {
@@ -44,6 +47,8 @@ export function CategoriesPage() {
       await loadCategories();
     } catch (submitError) {
       setError(submitError.message || 'Failed to save category');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -86,7 +91,7 @@ export function CategoriesPage() {
               <input type="number" value={form.sort_order} onChange={(event) => setForm((current) => ({ ...current, sort_order: event.target.value }))} />
             </label>
             <div className="row-actions">
-              <button className="button button-primary" type="submit">
+              <button className="button button-primary" type="submit" disabled={saving}>
                 {form.id ? <Check size={16} /> : <Plus size={16} />}
                 {form.id ? 'Update' : 'Create'}
               </button>
@@ -122,7 +127,7 @@ export function CategoriesPage() {
                       <td data-label="Slug">{category.slug}</td>
                       <td data-label="Sort">{category.sort_order}</td>
                       <td className="icon-column actions-cell" data-label="Edit">
-                        <button className="icon-action-link" type="button" onClick={() => setForm(category)} aria-label={`Edit ${category.name}`} title="Edit">
+                        <button className="icon-action-link" type="button" onClick={() => setForm({ id: category.id, name: category.name, slug: category.slug, description: category.description, sort_order: category.sort_order })} aria-label={`Edit ${category.name}`} title="Edit">
                           <PencilLine size={16} />
                         </button>
                       </td>

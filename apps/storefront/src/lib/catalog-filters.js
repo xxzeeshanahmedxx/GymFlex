@@ -29,7 +29,10 @@ export function sortProducts(products, sortBy = 'featured') {
     case 'name-desc':
       return items.sort((a, b) => b.name.localeCompare(a.name));
     case 'newest':
-      return items.sort((a, b) => (b.sortOrder ?? 0) - (a.sortOrder ?? 0));
+      return items.sort((a, b) => {
+        if (a.createdAt && b.createdAt) return new Date(b.createdAt) - new Date(a.createdAt);
+        return (b.sortOrder ?? 0) - (a.sortOrder ?? 0);
+      });
     default:
       return items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }

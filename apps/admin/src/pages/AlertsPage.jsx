@@ -12,9 +12,11 @@ export function AlertsPage() {
 
   const load = useCallback(async () => {
     try {
-      const [p, s] = await Promise.all([get('/api/price-alerts'), get('/api/stock-alerts')]);
-      setPriceAlerts(p.alerts || []);
-      setStockAlerts(s.alerts || []);
+      const [p, s] = await Promise.allSettled([get('/api/price-alerts'), get('/api/stock-alerts')]);
+      if (p.status === 'fulfilled') setPriceAlerts(p.value.alerts || []);
+      else console.warn('Price alerts failed:', p.reason);
+      if (s.status === 'fulfilled') setStockAlerts(s.value.alerts || []);
+      else console.warn('Stock alerts failed:', s.reason);
     } catch (err) { setError(err.message); }
   }, []);
 

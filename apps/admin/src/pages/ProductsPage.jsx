@@ -77,7 +77,7 @@ export function ProductsPage() {
   useEffect(() => { loadProducts(); }, []);
 
   const categories = useMemo(
-    () => Array.from(new Set(products.map((product) => product.category_name))).sort((a, b) => a.localeCompare(b)),
+    () => Array.from(new Set((products || []).map((product) => product.category_name))).sort((a, b) => a.localeCompare(b)),
     [products],
   );
 

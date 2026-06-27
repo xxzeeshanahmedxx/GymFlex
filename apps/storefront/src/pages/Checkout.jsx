@@ -11,7 +11,7 @@ const DEFAULT_SHIPPING_FEE = 250;
 const states = ['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Gilgit-Baltistan', 'Azad Kashmir'];
 
 const inputClassName =
-  'block w-full rounded-2xl border border-white/20 bg-[#1a1a1a] px-4 py-3.5 text-base font-semibold text-white placeholder:text-gray-500 outline-none transition focus:border-brand-pink focus:bg-[#222]';
+  'checkout-input block w-full rounded-2xl border border-white/20 bg-[#1a1a1a] px-4 py-3.5 text-base font-semibold text-white placeholder:text-gray-500 outline-none transition focus:border-brand-pink focus:bg-[#222]';
 const labelClassName = 'block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2';
 
 function EmptyCartState({ onContinueShopping }) {
@@ -269,6 +269,8 @@ export default function Checkout() {
     }
   };
 
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
+
   if (cart.length === 0 && !submittedOrder) {
     return <EmptyCartState onContinueShopping={() => navigate('/shop')} />;
   }
@@ -276,8 +278,6 @@ export default function Checkout() {
   if (submittedOrder) {
     return <OrderConfirmedState orderNumber={submittedOrder.orderNumber} />;
   }
-
-  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
   return (
     <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 sm:py-14 font-sans animate-fade-in-up flex-grow">
@@ -288,7 +288,7 @@ export default function Checkout() {
 
       <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1.15fr,0.85fr] lg:items-start">
         {/* Mobile order summary toggle */}
-        <button type="button" onClick={() => setMobileSummaryOpen(!mobileSummaryOpen)} className="lg:hidden rounded-2xl border border-white/10 bg-[#1a1a1a] p-4 text-left flex items-center justify-between">
+        <button type="button" onClick={() => setMobileSummaryOpen(!mobileSummaryOpen)} className="checkout-summary-toggle lg:hidden rounded-2xl border border-white/10 bg-[#1a1a1a] px-4 text-left flex items-center justify-between">
           <div>
             <span className="text-sm font-bold text-white uppercase tracking-widest">Order Summary</span>
             <span className="block text-xs text-gray-400 mt-0.5">{cart.length} item{cart.length !== 1 ? 's' : ''} · Rs. {orderTotal}</span>
@@ -309,7 +309,7 @@ export default function Checkout() {
               <label htmlFor="phone" className={labelClassName}>Phone</label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-4 flex items-center text-gray-500 font-bold">+92</span>
-                <input id="phone" name="phone" className={`${inputClassName} pl-14`} type="tel" placeholder="300 1234567" minLength={10} required autoComplete="tel" onBlur={async (e) => {
+                <input id="phone" name="phone" className={`${inputClassName} pl-14`} type="tel" placeholder="300 1234567" minLength={10} required autoComplete="tel-national" inputMode="numeric" onBlur={async (e) => {
                   const val = e.target.value.replace(/\D/g, '');
                   if (val.length >= 10) {
                     try { const res = await fetch(`/api/addresses?phone=${val}`); const d = await res.json(); setSavedAddresses(d.addresses || []); } catch {}
@@ -321,7 +321,7 @@ export default function Checkout() {
 
             <div>
               <label htmlFor="state" className={labelClassName}>State</label>
-              <select id="state" name="state" required className={inputClassName}>
+              <select id="state" name="state" required className={inputClassName} autoComplete="address-level1">
                 <option value="">Select state</option>
                 {states.map((state) => <option key={state} value={state}>{state}</option>)}
               </select>

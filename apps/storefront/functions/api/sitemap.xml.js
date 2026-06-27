@@ -1,7 +1,7 @@
 export async function onRequestGet(context) {
   const [products, categories] = await Promise.all([
     context.env.STORE_DB.prepare("SELECT slug, updated_at FROM products WHERE is_active = 1").all(),
-    context.env.STORE_DB.prepare("SELECT slug, updated_at FROM categories WHERE is_active = 1").all(),
+    context.env.STORE_DB.prepare("SELECT slug, updated_at FROM categories").all(),
   ]);
   const pages = ['', '/products', '/cart', '/comparisons', '/refer'];
   const urls = pages.map((p) => `<url><loc>https://gymflex-bg2.pages.dev${p}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`);

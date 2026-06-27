@@ -24,7 +24,7 @@ export function DiscountAnalyticsPage() {
           <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <div className="stat-card"><span>Coupons Used</span><strong>{data.summary.total_used}</strong></div>
             <div className="stat-card"><span>Total Discounted</span><strong>Rs. {data.summary.total_saved}</strong></div>
-            <div className="stat-card"><span>Active Coupons</span><strong>{data.usage.filter((d) => d.is_active).length}</strong></div>
+            <div className="stat-card"><span>Active Coupons</span><strong>{(data.usage || []).filter((d) => d.is_active).length}</strong></div>
           </div>
           <section className="panel">
             <h2 className="panel-header">All Coupons</h2>

@@ -42,7 +42,7 @@ export async function onRequestPut(context) {
   const slug = slugify(body?.slug || name);
   const categoryId = String(body?.category_id || '').trim();
   const description = String(body?.description || '').trim();
-  const price = Number(body?.price || 0);
+  const price = body?.price == null ? 0 : Number(body.price);
   const salePrice = body?.sale_price == null || body?.sale_price === '' ? null : Number(body.sale_price);
   const onSale = Boolean(body?.on_sale && salePrice != null);
   const isActive = body?.is_active !== false;
@@ -62,16 +62,27 @@ export async function onRequestPut(context) {
   const existing = await context.env.STORE_DB.prepare('SELECT id FROM products WHERE id = ? LIMIT 1').bind(id).first();
   if (!existing) return error('Product not found', 404);
 
+  // Upsert variants: update existing, insert new, delete removed
+  const existingVariants = await context.env.STORE_DB.prepare('SELECT id FROM product_variants WHERE product_id = ?').bind(id).all();
+  const existingIds = new Set((existingVariants.results || []).map((v) => v.id));
+  const incomingIds = new Set(variants.map((v) => v.id).filter(Boolean));
+  const toDelete = [...existingIds].filter((eid) => !incomingIds.has(eid));
+
   const statements = [
     context.env.STORE_DB
       .prepare('UPDATE products SET category_id = ?, name = ?, slug = ?, description = ?, price = ?, sale_price = ?, on_sale = ?, is_active = ?, is_featured = ?, sort_order = ?, video_url = ?, meta_title = ?, meta_description = ?, is_preorder = ?, preorder_release_date = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .bind(categoryId, name, slug, description, price, salePrice, onSale ? 1 : 0, isActive ? 1 : 0, isFeatured ? 1 : 0, sortOrder, videoUrl, metaTitle, metaDescription, isPreorder ? 1 : 0, preorderReleaseDate, id),
-    context.env.STORE_DB.prepare('DELETE FROM product_variants WHERE product_id = ?').bind(id),
-    ...variants.map((variant) =>
-      context.env.STORE_DB
+    ...(toDelete.length > 0 ? [context.env.STORE_DB.prepare(`DELETE FROM product_variants WHERE id IN (${toDelete.map(() => '?').join(',')}) AND product_id = ?`).bind(...toDelete, id)] : []),
+    ...variants.map((variant) => {
+      if (incomingIds.has(variant.id)) {
+        return context.env.STORE_DB
+          .prepare('UPDATE product_variants SET type = ?, name = ?, image_url = ?, is_active = ?, sort_order = ?, stock = ? WHERE id = ? AND product_id = ?')
+          .bind(variant.type, variant.name, variant.image_url, variant.is_active ? 1 : 0, variant.sort_order, variant.stock, variant.id, id);
+      }
+      return context.env.STORE_DB
         .prepare('INSERT INTO product_variants (id, product_id, type, name, image_url, is_active, sort_order, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-        .bind(variant.id, id, variant.type, variant.name, variant.image_url, variant.is_active ? 1 : 0, variant.sort_order, variant.stock),
-    ),
+        .bind(variant.id, id, variant.type, variant.name, variant.image_url, variant.is_active ? 1 : 0, variant.sort_order, variant.stock);
+    }),
   ];
 
   try {

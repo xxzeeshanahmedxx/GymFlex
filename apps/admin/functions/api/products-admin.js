@@ -43,7 +43,7 @@ export async function onRequestPost(context) {
   const slug = slugify(body?.slug || name);
   const categoryId = String(body?.category_id || '').trim();
   const description = String(body?.description || '').trim();
-  const price = Number(body?.price || 0);
+  const price = body?.price == null ? 0 : Number(body.price);
   const salePrice = body?.sale_price == null || body?.sale_price === '' ? null : Number(body.sale_price);
   const onSale = Boolean(body?.on_sale && salePrice != null);
   const isActive = body?.is_active !== false;

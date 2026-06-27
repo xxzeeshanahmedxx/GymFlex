@@ -25,7 +25,9 @@ export async function onRequestGet(context) {
     description: p.description || '',
   }));
 
-  const headers = Object.keys(products[0] || {});
+  if (products.length === 0) return error('No products found');
+
+  const headers = Object.keys(products[0]);
   const csvRows = [headers.join(',')];
   for (const product of products) {
     csvRows.push(headers.map((h) => `"${String(product[h] || '').replace(/"/g, '""')}"`).join(','));

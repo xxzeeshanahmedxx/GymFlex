@@ -34,7 +34,7 @@ export function AdminShell() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', adminTheme === 'light' ? 'light' : 'dark');
-    localStorage.setItem('admin_theme', adminTheme);
+    try { localStorage.setItem('admin_theme', adminTheme); } catch { }
   }, [adminTheme]);
 
   const toggleAdminTheme = () => setAdminTheme((t) => (t === 'dark' ? 'light' : 'dark'));

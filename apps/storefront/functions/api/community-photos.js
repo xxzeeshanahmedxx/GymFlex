@@ -15,6 +15,6 @@ export async function onRequestPost(context) {
   const body = await readJson(context.request);
   if (!body.image_url || !body.email) return error('image_url and email required');
   const id = crypto.randomUUID();
-  await context.env.STORE_DB.prepare('INSERT INTO community_photos (id, email, image_url, caption) VALUES (?, ?, ?, ?)').bind(id, body.email, body.image_url, body.caption || '').run();
+  await context.env.STORE_DB.prepare('INSERT INTO community_photos (id, image_url, author_name) VALUES (?, ?, ?)').bind(id, body.image_url, body.email).run();
   return json({ id }, 201);
 }

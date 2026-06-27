@@ -52,6 +52,7 @@ export function normalizeApiVariant(variant) {
     isActive: Boolean(variant.is_active ?? variant.isActive ?? true),
     is_active: Boolean(variant.is_active ?? variant.isActive ?? true),
     sortOrder: Number(variant.sort_order || 0),
+    stock: Number(variant.stock ?? 0),
   };
 }
 
@@ -71,6 +72,7 @@ export function normalizeApiProduct(product, variants = [], images = [], lookPro
     isActive: Boolean(product.is_active ?? product.isActive),
     isFeatured: Boolean(product.is_featured ?? product.isFeatured),
     sortOrder: Number(product.sort_order || 0),
+    createdAt: product.created_at || null,
     primaryImageUrl: product.primary_image_url || product.primaryImageUrl || null,
     video_url: product.video_url || '',
     meta_title: product.meta_title || '',

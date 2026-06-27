@@ -126,11 +126,6 @@ export async function onRequestPost(context) {
       } else {
         discountAmount = Math.min(discountRow.value, subtotal);
       }
-
-      await context.env.STORE_DB
-        .prepare('UPDATE discount_codes SET used_count = used_count + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-        .bind(discountRow.id)
-        .run();
     }
   }
 
@@ -142,7 +137,6 @@ export async function onRequestPost(context) {
     if (card) {
       appliedGiftCardCode = giftCardCode;
       usedGiftAmount = Math.min(giftCardAmount, card.balance);
-      await context.env.STORE_DB.prepare("UPDATE gift_cards SET balance = balance - ? WHERE id = ?").bind(usedGiftAmount, card.id).run();
     }
   }
 
@@ -168,6 +162,17 @@ export async function onRequestPost(context) {
   ];
 
   await context.env.STORE_DB.batch(statements);
+
+  // Deferred side-effects: only committed after order insert succeeds
+  if (appliedDiscountCode && discountRow) {
+    await context.env.STORE_DB
+      .prepare('UPDATE discount_codes SET used_count = used_count + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+      .bind(discountRow.id)
+      .run();
+  }
+  if (appliedGiftCardCode && usedGiftAmount > 0) {
+    await context.env.STORE_DB.prepare("UPDATE gift_cards SET balance = balance - ? WHERE id = ?").bind(usedGiftAmount, card.id).run();
+  }
 
   return json({
     success: true,

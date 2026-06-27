@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Heart, Star, BarChart3, Clock, Timer } from 'lucide-react';
 import { useShop } from '../context/useShop';
 import { getEffectivePrice, getProductPath, getProductPrimaryImage } from '../lib/product-utils';
 import CountdownTimer from './CountdownTimer';
-import QuickViewModal from './QuickViewModal';
+
+const QuickViewModal = lazy(() => import('./QuickViewModal'));
 
 function getSalePrice(product) {
   const value = product?.salePrice ?? product?.sale_price;
@@ -46,18 +47,18 @@ export const ProductCard = ({ product }) => {
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
-              className="absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+              className="prod-card-action-btn absolute top-3 right-3 z-20 rounded-full bg-black/40 hover:bg-black/60 transition-colors"
               aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
             >
-              <Heart key={liked} className={`w-4.5 h-4.5 transition-colors ${liked ? 'fill-brand-pink text-brand-pink heart-pulse' : 'text-white'}`} />
+              <Heart key={liked} className={`w-[18px] h-[18px] transition-colors ${liked ? 'fill-brand-pink text-brand-pink heart-pulse' : 'text-white'}`} />
             </button>
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); toggleCompare(product); }}
-              className="absolute top-12 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+              className="prod-card-action-btn secondary absolute top-12 right-3 z-20 rounded-full bg-black/40 hover:bg-black/60 transition-colors"
               aria-label={inCompare ? 'Remove from compare' : 'Add to compare'}
             >
-              <BarChart3 className={`w-4 h-4 transition-colors ${inCompare ? 'text-brand-pink' : 'text-white'}`} />
+              <BarChart3 className={`w-[16px] h-[16px] transition-colors ${inCompare ? 'text-brand-pink' : 'text-white'}`} />
             </button>
 
           <div className="product-card-image-skeleton" aria-hidden="true" />
@@ -111,7 +112,7 @@ export const ProductCard = ({ product }) => {
           )}
         </div>
       </Link>
-      {showQuickView ? <QuickViewModal product={product} onClose={() => setShowQuickView(false)} /> : null}
+      {showQuickView ? <Suspense fallback={null}><QuickViewModal product={product} onClose={() => setShowQuickView(false)} /></Suspense> : null}
     </article>
   );
 };

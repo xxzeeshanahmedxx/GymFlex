@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
 
   const images = await context.env.STORE_DB.prepare('SELECT * FROM product_images WHERE product_id = ?').bind(sourceId).all();
   const imageStatements = (images.results || []).map((img) =>
-    context.env.STORE_DB.prepare('INSERT INTO product_images (id, product_id, r2_key, cdn_url, alt_text, sort_order, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(), newId, img.r2_key, img.cdn_url, img.alt_text || '', img.sort_order || 0, img.is_primary || 0),
+    context.env.STORE_DB.prepare('INSERT INTO product_images (id, product_id, r2_key, cdn_url, alt_text, sort_order, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(), newId, `${img.r2_key}-${crypto.randomUUID().slice(0, 8)}`, img.cdn_url, img.alt_text || '', img.sort_order || 0, img.is_primary || 0),
   );
 
   await context.env.STORE_DB.batch([...variantStatements, ...imageStatements]);

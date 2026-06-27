@@ -1,4 +1,4 @@
-import { cacheJson } from '../_lib/http';
+import { cacheJson, error } from '../_lib/http';
 
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);

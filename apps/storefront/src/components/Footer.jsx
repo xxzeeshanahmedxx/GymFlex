@@ -33,8 +33,8 @@ export default function Footer() {
                 Premium gym wear engineered for performance. Train harder, look better.
               </p>
               <form onSubmit={handleSubscribe} className="flex gap-2">
-                <input type="email" value={nEmail} onChange={(e) => setNEmail(e.target.value)} placeholder="Your email" required className="flex-1 bg-black/40 border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-pink" />
-                <button type="submit" disabled={nLoading} className="bg-brand-pink hover:bg-brand-pink/80 text-black text-xs font-bold px-3 py-1.5 rounded transition-colors whitespace-nowrap">{nLoading ? '...' : 'Subscribe'}</button>
+                <input type="email" value={nEmail} onChange={(e) => setNEmail(e.target.value)} placeholder="Your email" required autoComplete="email" className="form-input flex-1 bg-black/40 border border-white/10 rounded px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-pink" />
+                <button type="submit" disabled={nLoading} className="newsletter-sub-btn bg-brand-pink hover:bg-brand-pink/80 text-black text-sm font-bold px-4 rounded transition-colors whitespace-nowrap min-w-[44px]">{nLoading ? '...' : 'Subscribe'}</button>
               </form>
               {nStatus ? (
                 <p className="text-[11px] mt-1 flex items-center gap-1 animate-fade-in-up">

@@ -7,7 +7,7 @@ const name = process.env.ADMIN_NAME || 'Admin';
 const password = process.env.ADMIN_PASSWORD || 'ChangeMeAdmin2026!';
 const salt = crypto.randomBytes(16);
 const hash = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
-const passwordHash = `pbkdf2_sha256$100000$${salt.toString('base64')}$${hash.toString('base64')}`;
+const passwordHash = `pbkdf2$${100000}$${salt.toString('base64')}$${hash.toString('base64')}`;
 
 const sql = `INSERT INTO admin_users (id, email, name, password_hash, is_active)
 VALUES ('admin-user', '${email.replace(/'/g, "''")}', '${name.replace(/'/g, "''")}', '${passwordHash}', 1)

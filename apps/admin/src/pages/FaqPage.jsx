@@ -52,8 +52,10 @@ export function FaqPage() {
   const handleDragEnd = () => {
     if (dragItem.current === dragOverItem.current) { dragItem.current = null; dragOverItem.current = null; return; }
     const updated = [...items];
-    const [removed] = updated.splice(dragItem.current, 1);
-    updated.splice(dragOverItem.current, 0, removed);
+    const from = Math.max(0, Math.min(dragItem.current, updated.length - 1));
+    const to = Math.max(0, Math.min(dragOverItem.current, updated.length));
+    const [removed] = updated.splice(from, 1);
+    updated.splice(to, 0, removed);
     setItems(updated);
     setReordered(true);
     dragItem.current = null;

@@ -76,7 +76,7 @@ export function LoyaltyPage() {
               {points.length === 0 ? (
                 <tr><td colSpan="3" className="empty-cell">No loyalty points yet.</td></tr>
               ) : points.map((p) => (
-                <tr key={p.phone}>
+                <tr key={p.id}>
                   <td data-label="Phone">{p.phone}</td>
                   <td data-label="Points"><strong>{p.points}</strong></td>
                   <td data-label="Updated">{p.updated_at}</td>

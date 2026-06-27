@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Bell, ChevronRight, Clock, RotateCcw, ShieldCheck, ShoppingCart, Sparkles, Truck } from 'lucide-react';
 import { Carousel } from '../components/Carousel';
@@ -6,10 +6,11 @@ import { ProductCard } from '../components/ProductCard';
 import { SectionState } from '../components/SectionState';
 import { ProductDetailsSkeleton } from '../components/Skeletons';
 import ShareButton from '../components/ShareButton';
-import SizeGuideModal from '../components/SizeGuideModal';
 import { StarRatingDisplay, StarRatingInput } from '../components/StarRating';
 import CountdownTimer from '../components/CountdownTimer';
-import TryOnModal from '../components/TryOnModal';
+
+const SizeGuideModal = lazy(() => import('../components/SizeGuideModal'));
+const TryOnModal = lazy(() => import('../components/TryOnModal'));
 import { useShop } from '../context/useShop';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { fetchCatalog, fetchProductById } from '../lib/storefront-api';
@@ -175,12 +176,12 @@ function PriceBlock({ product }) {
 
 function QuantitySelector({ quantity, onDecrease, onIncrease }) {
   return (
-    <div className="inline-flex w-fit items-center justify-center border-2 border-gray-200 rounded-xl font-sans bg-white h-11 sm:h-12">
-      <button onClick={onDecrease} className="px-3 sm:px-4 h-full text-gray-600 hover:bg-brand-pink/5 hover:text-brand-pink transition-colors rounded-l-xl" aria-label="Decrease quantity">
+    <div className="inline-flex w-fit items-center justify-center border-2 border-gray-200 rounded-xl font-sans bg-white h-12">
+      <button onClick={onDecrease} className="qty-btn h-full text-gray-600 hover:bg-brand-pink/5 hover:text-brand-pink transition-colors rounded-l-xl" aria-label="Decrease quantity">
         -
       </button>
       <span className="h-full flex w-10 sm:w-12 items-center justify-center font-bold text-base text-center">{quantity}</span>
-      <button onClick={onIncrease} className="px-3 sm:px-4 h-full text-gray-600 hover:bg-brand-pink/5 hover:text-brand-pink transition-colors rounded-r-xl" aria-label="Increase quantity">
+      <button onClick={onIncrease} className="qty-btn h-full text-gray-600 hover:bg-brand-pink/5 hover:text-brand-pink transition-colors rounded-r-xl" aria-label="Increase quantity">
         +
       </button>
     </div>
@@ -294,19 +295,19 @@ function ReviewsSection({ product }) {
           </div>
           <label className="text-sm font-bold text-gray-400">
             Title (optional)
-            <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} className="w-full mt-1 rounded-xl border border-white/20 bg-[#111] px-4 py-2.5 text-white outline-none focus:border-brand-pink" placeholder="Great product!" />
+            <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} className="form-input w-full mt-1 rounded-xl border border-white/20 bg-[#111] px-4 py-2.5 text-white outline-none focus:border-brand-pink" placeholder="Great product!" autoComplete="off" />
           </label>
           <label className="text-sm font-bold text-gray-400">
             Review (optional)
-            <textarea value={formBody} onChange={(e) => setFormBody(e.target.value)} rows="3" className="w-full mt-1 rounded-xl border border-white/20 bg-[#111] px-4 py-2.5 text-white outline-none focus:border-brand-pink" placeholder="Share your experience..." />
+            <textarea value={formBody} onChange={(e) => setFormBody(e.target.value)} rows="3" className="form-input w-full mt-1 rounded-xl border border-white/20 bg-[#111] px-4 py-2.5 text-white outline-none focus:border-brand-pink" placeholder="Share your experience..." />
           </label>
           <label className="text-sm font-bold text-gray-400">
             Your name (optional)
-            <input value={formAuthor} onChange={(e) => setFormAuthor(e.target.value)} className="w-full mt-1 rounded-xl border border-white/20 bg-[#111] px-4 py-2.5 text-white outline-none focus:border-brand-pink" placeholder="Anonymous" />
+            <input value={formAuthor} onChange={(e) => setFormAuthor(e.target.value)} className="form-input w-full mt-1 rounded-xl border border-white/20 bg-[#111] px-4 py-2.5 text-white outline-none focus:border-brand-pink" placeholder="Anonymous" autoComplete="name" />
           </label>
-          {submitError ? <div className="text-red-400 text-sm">{submitError}</div> : null}
-          {submitSuccess ? <div className="text-green-400 text-sm">Review submitted! It will appear after approval.</div> : null}
-          <button type="submit" disabled={submitting} className="px-6 py-2.5 rounded-xl bg-brand-pink text-black text-sm font-bold uppercase tracking-widest hover:bg-brand-green-dark transition-colors disabled:opacity-50">
+          {submitError ? <div className="text-red-400 text-sm font-semibold bg-red-500/10 rounded-xl px-4 py-3">{submitError}</div> : null}
+          {submitSuccess ? <div className="text-green-400 text-sm font-semibold bg-green-500/10 rounded-xl px-4 py-3">Review submitted! It will appear after approval.</div> : null}
+          <button type="submit" disabled={submitting} className="px-6 py-3 rounded-xl bg-brand-pink text-black text-sm font-bold uppercase tracking-widest hover:bg-brand-green-dark transition-colors disabled:opacity-50 min-h-[44px]">
             {submitting ? 'Submitting...' : 'Submit review'}
           </button>
         </form>
@@ -356,7 +357,7 @@ function MobileAddToCart({ isOutOfStock, selectedVariant, quantity, product }) {
   return (
     <div className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] transition-transform duration-300 sm:hidden ${visible ? 'translate-y-0' : 'translate-y-full'}`}>
       <div className="flex items-center gap-3 max-w-md mx-auto">
-        <QuantitySelector quantity={quantity} onDecrease={() => {}} onIncrease={() => {}} />
+        <QuantitySelector quantity={quantity} onDecrease={() => setQuantity((q) => Math.max(1, q - 1))} onIncrease={() => setQuantity((q) => q + 1)} />
         <button
           onClick={() => !isOutOfStock && selectedVariant && addToCart(product, selectedVariant, quantity)}
           disabled={isOutOfStock}
@@ -570,8 +571,8 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
         </div>
       ) : null}
 
-      {showSizeGuide ? <SizeGuideModal category={product.categorySlug} onClose={() => setShowSizeGuide(false)} /> : null}
-      {showTryOn ? <TryOnModal product={product} onClose={() => setShowTryOn(false)} /> : null}
+      {showSizeGuide ? <Suspense fallback={null}><SizeGuideModal category={product.categorySlug} onClose={() => setShowSizeGuide(false)} /></Suspense> : null}
+      {showTryOn ? <Suspense fallback={null}><TryOnModal product={product} onClose={() => setShowTryOn(false)} /></Suspense> : null}
 
       <ReviewsSection product={product} />
 
