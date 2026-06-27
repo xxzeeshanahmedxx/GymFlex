@@ -1,4 +1,4 @@
-export function filterProducts(products, { query = '', category = '', saleOnly = false, minPrice, maxPrice }) {
+export function filterProducts(products, { query = '', category = '', saleOnly = false }) {
   const normalizedQuery = query.trim().toLowerCase();
 
   return products.filter((product) => {
@@ -8,11 +8,8 @@ export function filterProducts(products, { query = '', category = '', saleOnly =
 
     const matchesCategory = !category || product.categorySlug === category;
     const matchesSale = !saleOnly || product.onSale;
-    const effectivePrice = product.salePrice ?? product.price;
-    const matchesMinPrice = minPrice == null || minPrice === '' || effectivePrice >= Number(minPrice);
-    const matchesMaxPrice = maxPrice == null || maxPrice === '' || effectivePrice <= Number(maxPrice);
 
-    return matchesQuery && matchesCategory && matchesSale && matchesMinPrice && matchesMaxPrice;
+    return matchesQuery && matchesCategory && matchesSale;
   });
 }
 

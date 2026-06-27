@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Menu, Moon, Ruler, Search, ShoppingBag, Sun, X, ChevronDown, Gift, Users, HelpCircle } from 'lucide-react';
+import { Heart, Menu, Ruler, Search, ShoppingBag, X, ChevronDown, Gift, Users, HelpCircle } from 'lucide-react';
 import { useShop } from '../context/useShop';
 import { fetchCategories, fetchHomepageSettings } from '../lib/storefront-api';
 
@@ -58,7 +58,7 @@ function MobileSidebarSubnav({ icon, label, children }) {
 }
 
 export default function Navbar() {
-  const { cartCount, wishlist, theme, toggleTheme, setIsCartOpen } = useShop();
+  const { cartCount, wishlist, setIsCartOpen } = useShop();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [navigation, setNavigation] = useState(fallbackNavigation);
   const [showFitFinder, setShowFitFinder] = useState(false);
@@ -96,7 +96,7 @@ export default function Navbar() {
               </button>
             </div>
 
-            <div className="flex justify-start">
+            <div className="flex justify-center">
               <Link to="/" className="text-lg sm:text-2xl md:text-3xl font-heading font-[850] text-white tracking-widest hover:text-brand-pink transition-colors duration-300 truncate">GYMFLEX</Link>
             </div>
 
@@ -104,14 +104,13 @@ export default function Navbar() {
               <Link to="/search" className="header-action-btn" aria-label="Search">
                 <Search className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
-              <button onClick={toggleTheme} className="header-action-btn hidden sm:inline-flex" aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-                {theme === 'dark' ? <Sun className="w-5 h-5 sm:w-6 sm:h-6" /> : <Moon className="w-5 h-5 sm:w-6 sm:h-6" />}
-              </button>
-              <Link to="/wishlist" className="header-action-btn relative" aria-label="Wishlist">
+              <Link to="/wishlist" className="header-action-btn relative hidden sm:inline-flex" aria-label="Wishlist">
                 <Heart key={wishlist.length} className={`heart-pulse w-5 h-5 sm:w-6 sm:h-6 ${wishlist.length > 0 ? 'text-brand-pink' : ''}`} />
                 {wishlist.length > 0 ? <span key={wishlist.length} className="badge-bounce absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-brand-pink text-black text-[9px] font-bold px-1 leading-none">{wishlist.length}</span> : null}
               </Link>
-              <CartButton count={cartCount} onClick={() => setIsCartOpen(true)} />
+              <div className="hidden sm:inline-flex">
+                <CartButton count={cartCount} onClick={() => setIsCartOpen(true)} />
+              </div>
             </div>
           </div>
 
@@ -152,10 +151,6 @@ export default function Navbar() {
             <Link to="/wishlist" className="mobile-sidebar-link" onClick={() => setIsMobileMenuOpen(false)}>
               <Heart size={16} className="mr-3" />Wishlist {wishlist.length > 0 ? `(${wishlist.length})` : ''}
             </Link>
-            <button onClick={() => { toggleTheme(); }} className="mobile-sidebar-link">
-              {theme === 'dark' ? <Sun size={16} className="mr-3" /> : <Moon size={16} className="mr-3" />}
-              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            </button>
           </nav>
         </aside>
       </div>

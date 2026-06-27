@@ -19,10 +19,6 @@ export function CatalogControls({
   showSaleToggle = false,
   onResetFilters,
   hasActiveFilters,
-  minPrice,
-  onMinPriceChange,
-  maxPrice,
-  onMaxPriceChange,
 }) {
   return (
     <div className="catalog-controls mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap sm:justify-end">
@@ -42,29 +38,6 @@ export function CatalogControls({
         </label>
       ) : null}
 
-      <label className="catalog-filter-label text-xs font-bold uppercase tracking-widest text-gray-500 sm:w-36">
-        Min Price
-        <input
-          type="number"
-          min="0"
-          value={minPrice}
-          onChange={(e) => onMinPriceChange(e.target.value)}
-          placeholder="Min"
-          className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm font-medium text-gray-700 outline-none transition focus:border-brand-pink focus:bg-white"
-        />
-      </label>
-
-      <label className="catalog-filter-label text-xs font-bold uppercase tracking-widest text-gray-500 sm:w-36">
-        Max Price
-        <input
-          type="number"
-          min="0"
-          value={maxPrice}
-          onChange={(e) => onMaxPriceChange(e.target.value)}
-          placeholder="Max"
-          className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm font-medium text-gray-700 outline-none transition focus:border-brand-pink focus:bg-white"
-        />
-      </label>
 
       <label className="catalog-sort-inline text-xs font-bold text-gray-500">
         <span>Sort by</span>
