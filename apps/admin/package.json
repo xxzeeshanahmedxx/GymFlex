@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "wrangler pages deploy dist --project-name <your-pages-project>",
+    "deploy": "wrangler pages deploy dist --project-name gymflex-admin",
     "cf:whoami": "wrangler whoami",
     "d1:migrate": "wrangler d1 execute <your-d1-name> --remote --file=./migrations/0001_initial_schema.sql && wrangler d1 execute <your-d1-name> --remote --file=./migrations/0004_site_settings.sql",
     "d1:seed": "node ./scripts/generate-seed-from-storefront.mjs && wrangler d1 execute <your-d1-name> --remote --file=./migrations/0002_seed_catalog.sql"
