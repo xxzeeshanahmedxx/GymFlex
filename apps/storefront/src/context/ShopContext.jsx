@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ShopContext } from './shop-context';
 import { useLocalStorageState } from '../hooks/useLocalStorageState';
 import { getEffectivePrice } from '../lib/product-utils';
+import { useToast } from '../components/Toast';
 
 const STORAGE_KEYS = {
   cart: 'cart',
@@ -18,6 +19,7 @@ function isSameCartItem(item, productId, variantId) {
 }
 
 export function ShopProvider({ children }) {
+  const addToast = useToast();
   const [cart, setCart] = useLocalStorageState(STORAGE_KEYS.cart, []);
   const [recentlyViewed, setRecentlyViewed] = useLocalStorageState(STORAGE_KEYS.recentlyViewed, []);
   const [wishlist, setWishlist] = useLocalStorageState(STORAGE_KEYS.wishlist, []);
@@ -40,7 +42,8 @@ export function ShopProvider({ children }) {
     });
 
     setIsCartOpen(true);
-  }, [setCart]);
+    addToast(`${product.name} added to cart`, 'cart');
+  }, [setCart, addToast]);
 
   const removeFromCart = useCallback((productId, variantId) => {
     setCart((currentCart) => currentCart.filter((item) => !isSameCartItem(item, productId, variantId)));
@@ -60,10 +63,14 @@ export function ShopProvider({ children }) {
   const toggleWishlist = useCallback((product) => {
     setWishlist((current) => {
       const exists = current.some((item) => item.id === product.id);
-      if (exists) return current.filter((item) => item.id !== product.id);
+      if (exists) {
+        addToast(`${product.name} removed from wishlist`, 'wishlist');
+        return current.filter((item) => item.id !== product.id);
+      }
+      addToast(`${product.name} added to wishlist`, 'wishlist');
       return [...current, product];
     });
-  }, [setWishlist]);
+  }, [setWishlist, addToast]);
 
   const isInWishlist = useCallback((productId) => {
     return wishlist.some((item) => item.id === productId);

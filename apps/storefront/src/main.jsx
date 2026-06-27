@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import Home from './pages/Home';
 import { ShopProvider } from './context/ShopContext';
+import { ToastProvider } from './components/Toast';
 import ScrollToTop from './components/ScrollToTop';
 import { StoreLoadingSpinner } from './components/Skeletons';
 
@@ -57,7 +58,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <ScrollToTop />
-      <ShopProvider>
+      <ToastProvider>
+        <ShopProvider>
         <Routes>
           <Route path="/" element={<App />}>
             <Route index element={<Home />} />
@@ -83,6 +85,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           </Route>
         </Routes>
       </ShopProvider>
+      </ToastProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );

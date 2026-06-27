@@ -67,9 +67,10 @@ function ProductVisual({ product, selectedImage, onSelectImage }) {
                 key={image.id}
                 type="button"
                 onClick={() => onSelectImage(image)}
-                className={`w-[72px] sm:w-[78px] aspect-square overflow-hidden rounded-2xl border-2 transition ${isSelected ? 'border-brand-pink shadow-md' : 'border-gray-200 hover:border-brand-pink/40'}`}
+                className={`relative w-[72px] sm:w-[78px] aspect-square overflow-hidden rounded-2xl border-2 transition-all duration-200 ${isSelected ? 'border-brand-pink shadow-md ring-1 ring-brand-pink/30 scale-105' : 'border-gray-200 hover:border-brand-pink/40'}`}
               >
                 <img src={thumbnailUrl} alt={image.altText || image.alt_text || product.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                {isSelected ? <span className="absolute bottom-1 right-1 w-4 h-4 bg-brand-pink rounded-full flex items-center justify-center shadow-sm"><span className="text-black text-[8px] font-bold">&#10003;</span></span> : null}
               </button>
             );
           })}
@@ -376,6 +377,31 @@ function ProductDetailsContent({ product, relatedProducts = [] }) {
                 <div className="flex flex-wrap gap-2 sm:gap-3">
                   {product.variants.map((variant) => {
                     const isSelected = selectedVariant?.id === variant.id;
+                    const isColorType = (product.variants[0]?.type || '').toLowerCase() === 'color';
+
+                    if (isColorType) {
+                      const colorHex = variant.name.toLowerCase().replace(/\s+/g, '');
+                      const colorMap = { black:'#0d0d0d', white:'#ffffff', red:'#ef4444', blue:'#3b82f6', green:'#22c55e', yellow:'#eab308', pink:'#ec4899', purple:'#a855f7', orange:'#f97316', brown:'#92400e', gray:'#6b7280', grey:'#6b7280', navy:'#1e3a5f', teal:'#14b8a6', coral:'#f97316', beige:'#f5f5dc', cream:'#fef3c7', khaki:'#b9a384', olive:'#808000', maroon:'#800000', burgundy:'#800020', charcoal:'#36454f', silver:'#c0c0c0', gold:'#ffd700', bronze:'#cd7f32', turquoise:'#40e0d0', indigo:'#4b0082', violet:'#8b5cf6', rose:'#f43f5e', mint:'#98fb98', lavender:'#e6e6fa', tan:'#d2b48c' };
+                      const bg = colorMap[colorHex] || colorHex;
+
+                      return (
+                        <button
+                          key={variant.id}
+                          onClick={() => {
+                            setSelectedVariant(variant);
+                            const nextImage = imageForVariant(product, variant);
+                            if (nextImage) setSelectedImage(nextImage);
+                          }}
+                          className={`relative rounded-full transition-all duration-200 ${
+                            isSelected ? 'ring-2 ring-brand-pink ring-offset-2 scale-110' : 'hover:scale-110'
+                          }`}
+                          title={variant.name}
+                        >
+                          <span className="block w-9 h-9 rounded-full border border-white/20" style={{ background: bg }} />
+                          {isSelected ? <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold" style={{ color: bg === '#ffffff' || bg === '#f5f5dc' || bg === '#fef3c7' || bg === '#e6e6fa' || bg === '#c0c0c0' || bg === '#ffd700' || bg === '#98fb98' || bg === '#d2b48c' ? '#0d0d0d' : '#ffffff' }}>&#10003;</span> : null}
+                        </button>
+                      );
+                    }
 
                     return (
                       <button

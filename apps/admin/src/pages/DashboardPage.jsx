@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { DollarSign, FolderKanban, Mail, Package, RefreshCw, ShoppingBag, Clock } from 'lucide-react';
 import { get } from '../lib/api';
+
+const statConfig = [
+  { key: 'activeProducts', label: 'Active Products', icon: Package, color: '#3b82f6' },
+  { key: 'totalOrders', label: 'Total Orders', icon: ShoppingBag, color: '#22c55e' },
+  { key: 'totalRevenue', label: 'Revenue', icon: DollarSign, color: '#f59e0b', prefix: 'Rs. ' },
+  { key: 'categories', label: 'Categories', icon: FolderKanban, color: '#a855f7' },
+  { key: 'pendingOrders', label: 'Pending Orders', icon: Clock, color: '#ef4444' },
+  { key: 'subscribers', label: 'Newsletter Subscribers', icon: Mail, color: '#ec4899' },
+];
 
 export function DashboardPage() {
   const [stats, setStats] = useState(null);
@@ -26,15 +35,22 @@ export function DashboardPage() {
       {error ? <div className="error-box">{error}</div> : null}
 
       {!stats ? (
-        <div className="stats-grid"><div className="stat-card skeleton"><div className="skeleton skeleton-line short" /><div className="skeleton skeleton-field" /></div><div className="stat-card skeleton"><div className="skeleton skeleton-line short" /><div className="skeleton skeleton-field" /></div><div className="stat-card skeleton"><div className="skeleton skeleton-line short" /><div className="skeleton skeleton-field" /></div></div>
+        <div className="stats-grid">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="stat-card stat-card-skeleton"><div className="skeleton skeleton-line short" /><div className="skeleton skeleton-field" /></div>
+          ))}
+        </div>
       ) : (
         <div className="stats-grid">
-          <div className="stat-card"><span>Active Products</span><strong>{stats.activeProducts}</strong></div>
-          <div className="stat-card"><span>Total Orders</span><strong>{stats.totalOrders}</strong></div>
-          <div className="stat-card"><span>Revenue</span><strong>Rs. {stats.totalRevenue}</strong></div>
-          <div className="stat-card"><span>Categories</span><strong>{stats.categories}</strong></div>
-          <div className="stat-card"><span>Pending Orders</span><strong>{stats.pendingOrders}</strong></div>
-          <div className="stat-card"><span>Newsletter Subscribers</span><strong>{stats.subscribers}</strong></div>
+          {statConfig.map(({ key, label, icon: Icon, color, prefix }) => (
+            <div key={key} className="stat-card">
+              <div className="stat-card-icon-wrap" style={{ background: `${color}18`, color }}>
+                <Icon size={18} />
+              </div>
+              <span>{label}</span>
+              <strong>{prefix || ''}{stats[key]}</strong>
+            </div>
+          ))}
         </div>
       )}
     </div>

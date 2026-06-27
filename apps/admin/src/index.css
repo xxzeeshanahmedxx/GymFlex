@@ -304,12 +304,39 @@ textarea { resize: vertical; }
 .full-row { grid-column: 1 / -1; }
 .stat-card,
 .panel { padding: 1.35rem; border-radius: 20px; overflow: hidden; }
+.stat-card {
+  display: flex;
+  flex-direction: column;
+}
+.stat-card-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.6rem;
+}
 .stat-card strong {
   display: block;
-  margin: 0.55rem 0 0.25rem;
-  font-size: 2.1rem;
+  margin: 0.3rem 0 0.1rem;
+  font-size: 1.8rem;
   font-family: var(--font-heading);
   color: var(--text);
+}
+.stat-card span {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.stat-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.skeleton-field {
+  width: 60%;
+  height: 1.5rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
 }
 .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
 .panel-header h2 { color: var(--text); }
