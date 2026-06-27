@@ -20,7 +20,6 @@ import { FaqPage } from './pages/FaqPage';
 import { GiftCardsPage } from './pages/GiftCardsPage';
 import { BundlesPage } from './pages/BundlesPage';
 import { DashboardPage } from './pages/DashboardPage';
-import { SubscribersPage } from './pages/SubscribersPage';
 import { CommunityPhotosPage } from './pages/CommunityPhotosPage';
 
 const ProductEditorPage = lazy(() => import('./pages/ProductEditorPage').then((module) => ({ default: module.ProductEditorPage })));
@@ -67,7 +66,6 @@ export default function App() {
           <Route path="faq" element={<LazyPage><FaqPage /></LazyPage>} />
           <Route path="gift-cards" element={<LazyPage><GiftCardsPage /></LazyPage>} />
           <Route path="bundles" element={<LazyPage><BundlesPage /></LazyPage>} />
-          <Route path="subscribers" element={<LazyPage><SubscribersPage /></LazyPage>} />
           <Route path="community-photos" element={<LazyPage><CommunityPhotosPage /></LazyPage>} />
           <Route path="settings" element={<LazyPage><SettingsPage /></LazyPage>} />
         </Route>

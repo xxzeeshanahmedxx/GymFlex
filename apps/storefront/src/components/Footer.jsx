@@ -1,25 +1,7 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
 import { footerSections } from '../data/navigation';
 
 export default function Footer() {
-  const [nEmail, setNEmail] = useState('');
-  const [nStatus, setNStatus] = useState('');
-  const [nLoading, setNLoading] = useState(false);
-
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    setNLoading(true);
-    setNStatus('');
-    try {
-      const res = await fetch('/api/newsletter', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: nEmail }) });
-      const data = await res.json();
-      if (!res.ok) { setNStatus(data.error || 'Failed'); } else { setNStatus('Subscribed!'); setNEmail(''); }
-    } catch { setNStatus('Network error'); }
-    setNLoading(false);
-  };
-
   return (
     <footer className="font-sans mt-auto bg-[#0d0d0d] text-gray-300 border-t border-brand-pink/20">
       <div className="h-1 w-full bg-gradient-to-r from-brand-pink to-brand-coral"></div>
@@ -29,19 +11,9 @@ export default function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5 sm:gap-10 mb-6 sm:mb-10">
             <div>
               <Link to="/" className="text-xl sm:text-2xl font-heading font-[850] tracking-widest text-white mb-2 sm:mb-4 block hover:text-brand-pink transition-colors">GYMFLEX</Link>
-              <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-3">
+              <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">
                 Premium gym wear engineered for performance. Train harder, look better.
               </p>
-              <form onSubmit={handleSubscribe} className="flex gap-2">
-                <input type="email" value={nEmail} onChange={(e) => setNEmail(e.target.value)} placeholder="Your email" required autoComplete="email" className="form-input flex-1 bg-black/40 border border-white/10 rounded px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-pink" />
-                <button type="submit" disabled={nLoading} className="newsletter-sub-btn bg-brand-pink hover:bg-brand-pink/80 text-black text-sm font-bold px-4 rounded transition-colors whitespace-nowrap min-w-[44px]">{nLoading ? '...' : 'Subscribe'}</button>
-              </form>
-              {nStatus ? (
-                <p className="text-[11px] mt-1 flex items-center gap-1 animate-fade-in-up">
-                  {nStatus === 'Subscribed!' ? <CheckCircle className="w-3 h-3 text-brand-coral newsletter-check" /> : null}
-                  <span className={nStatus === 'Subscribed!' ? 'text-brand-coral' : 'text-red-400'}>{nStatus}</span>
-                </p>
-              ) : null}
             </div>
 
             {footerSections.map((section) => (

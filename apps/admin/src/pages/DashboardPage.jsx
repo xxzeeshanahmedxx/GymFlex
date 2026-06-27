@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { DollarSign, FolderKanban, Mail, Package, RefreshCw, ShoppingBag, Clock } from 'lucide-react';
+import { DollarSign, FolderKanban, Package, RefreshCw, ShoppingBag, Clock } from 'lucide-react';
 import { get } from '../lib/api';
 
 const statConfig = [
@@ -8,7 +8,6 @@ const statConfig = [
   { key: 'totalRevenue', label: 'Revenue', icon: DollarSign, color: '#f59e0b', prefix: 'Rs. ' },
   { key: 'categories', label: 'Categories', icon: FolderKanban, color: '#a855f7' },
   { key: 'pendingOrders', label: 'Pending Orders', icon: Clock, color: '#ef4444' },
-  { key: 'subscribers', label: 'Newsletter Subscribers', icon: Mail, color: '#ec4899' },
 ];
 
 export function DashboardPage() {
