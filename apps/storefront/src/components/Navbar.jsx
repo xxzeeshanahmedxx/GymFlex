@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Menu, Moon, Ruler, Search, ShoppingBag, Sun, X } from 'lucide-react';
+import { Heart, Menu, Moon, Ruler, Search, ShoppingBag, Sun, X, ChevronDown, Gift, Users, HelpCircle } from 'lucide-react';
 import { useShop } from '../context/useShop';
 import { fetchCategories, fetchHomepageSettings } from '../lib/storefront-api';
 import FitFinderModal from './FitFinderModal';
@@ -38,8 +38,21 @@ function CartButton({ count, onClick }) {
   return (
     <button onClick={onClick} className="store-cart-button text-white relative transition-colors duration-300 hover:text-brand-pink" aria-label="Open cart">
       <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
-      {count > 0 ? <span className="store-cart-count">{count}</span> : null}
+      {count > 0 ? <span key={count} className="store-cart-count badge-bounce">{count}</span> : null}
     </button>
+  );
+}
+
+function MobileSidebarSubnav({ icon, label, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mobile-sidebar-group">
+      <button type="button" onClick={() => setOpen(!open)} className="mobile-sidebar-group-btn">
+        {icon}{label}
+        <ChevronDown className={`ml-auto w-4 h-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open ? <div className="mobile-sidebar-subnav">{children}</div> : null}
+    </div>
   );
 }
 
@@ -48,6 +61,14 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [navigation, setNavigation] = useState(fallbackNavigation);
   const [showFitFinder, setShowFitFinder] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,7 +86,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-40 w-full bg-black/95 border-b border-brand-pink/20 shadow-sm font-sans transition-colors duration-300 backdrop-blur-xl">
+      <nav className={`sticky top-0 z-40 w-full bg-black/95 border-b border-brand-pink/20 font-sans transition-all duration-300 backdrop-blur-xl ${scrolled ? 'shadow-2xl shadow-black/40' : 'shadow-none'}`}>
         <div className="max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-20 pt-1 sm:pt-2 relative">
             <div className="w-1/4 sm:w-1/3 flex items-center justify-start sm:hidden">
@@ -88,8 +109,8 @@ export default function Navbar() {
                 {theme === 'dark' ? <Sun className="w-5 h-5 sm:w-6 sm:h-6" /> : <Moon className="w-5 h-5 sm:w-6 sm:h-6" />}
               </button>
               <Link to="/wishlist" className="text-white hover:text-brand-pink transition-colors relative" aria-label="Wishlist">
-                <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${wishlist.length > 0 ? 'text-brand-pink' : ''}`} />
-                {wishlist.length > 0 ? <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-brand-pink text-black text-[9px] font-bold px-1 leading-none">{wishlist.length}</span> : null}
+                <Heart key={wishlist.length} className={`heart-pulse w-5 h-5 sm:w-6 sm:h-6 ${wishlist.length > 0 ? 'text-brand-pink' : ''}`} />
+                {wishlist.length > 0 ? <span key={wishlist.length} className="badge-bounce absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-brand-pink text-black text-[9px] font-bold px-1 leading-none">{wishlist.length}</span> : null}
               </Link>
               <CartButton count={cartCount} onClick={() => setIsCartOpen(true)} />
             </div>
@@ -113,7 +134,26 @@ export default function Navbar() {
             <button type="button" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu"><X size={20} /></button>
           </div>
           <nav className="mobile-sidebar-nav">
+            <span className="mobile-sidebar-section-label">Shop</span>
             {navigation.map((item) => <NavigationLink key={item.to} item={item} mobile onClick={() => setIsMobileMenuOpen(false)} />)}
+
+            <span className="mobile-sidebar-section-label">More</span>
+            <MobileSidebarSubnav icon={<Gift size={16} />} label="Offers">
+              <Link to="/sale" className="mobile-sidebar-sublink" onClick={() => setIsMobileMenuOpen(false)}>Sale</Link>
+              <Link to="/refer" className="mobile-sidebar-sublink" onClick={() => setIsMobileMenuOpen(false)}>Refer a Friend</Link>
+            </MobileSidebarSubnav>
+            <MobileSidebarSubnav icon={<HelpCircle size={16} />} label="Help">
+              <button onClick={() => { setShowFitFinder(true); setIsMobileMenuOpen(false); }} className="mobile-sidebar-sublink">Fit Finder</button>
+              <Link to="/faq" className="mobile-sidebar-sublink" onClick={() => setIsMobileMenuOpen(false)}>FAQ</Link>
+              <Link to="/community" className="mobile-sidebar-sublink" onClick={() => setIsMobileMenuOpen(false)}>Community</Link>
+            </MobileSidebarSubnav>
+            <Link to="/wishlist" className="mobile-sidebar-link" onClick={() => setIsMobileMenuOpen(false)}>
+              <Heart size={16} className="mr-3" />Wishlist {wishlist.length > 0 ? `(${wishlist.length})` : ''}
+            </Link>
+            <button onClick={() => { toggleTheme(); }} className="mobile-sidebar-link">
+              {theme === 'dark' ? <Sun size={16} className="mr-3" /> : <Moon size={16} className="mr-3" />}
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </button>
           </nav>
         </aside>
       </div>

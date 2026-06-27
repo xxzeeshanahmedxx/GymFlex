@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, post } from '../lib/api';
 
 export function BundlesPage() {
+  const confirm = useConfirm();
   const [bundles, setBundles] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -29,7 +31,7 @@ export function BundlesPage() {
   };
 
   const deleteBundle = async (id) => {
-    if (!window.confirm('Delete this bundle?')) return;
+    if (!(await confirm({ title: 'Delete bundle?', message: 'This will permanently delete this product bundle.', confirmLabel: 'Delete' }))) return;
     try { await del(`/api/bundles?id=${id}`); setMessage('Bundle deleted.'); await loadBundles(); } catch (err) { setError(err.message); }
   };
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Check, Download, Eye, FilterX } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { get, post } from '../lib/api';
@@ -9,6 +9,7 @@ const statuses = ['all', 'new', 'confirmed', 'processing', 'shipped', 'delivered
 const bulkStatuses = ['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 export function OrdersPage() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('all');
@@ -161,7 +162,7 @@ export function OrdersPage() {
                 <tr><td colSpan="8" className="empty-cell">No orders found.</td></tr>
               ) : (
                 filteredOrders.map((order) => (
-                  <tr key={order.id} className={selectedIds.has(order.id) ? 'row-selected' : ''}>
+                  <tr key={order.id} className={`clickable-row ${selectedIds.has(order.id) ? 'row-selected' : ''}`} onClick={(e) => { if (!e.target.closest('a, button, input, label')) navigate(`/orders/${order.id}`); }}>
                     <td className="icon-column" data-label="">
                       <label className="checkbox-label">
                         <input type="checkbox" checked={selectedIds.has(order.id)} onChange={() => toggleSelect(order.id)} />

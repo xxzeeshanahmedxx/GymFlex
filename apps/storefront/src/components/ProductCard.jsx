@@ -28,7 +28,7 @@ export const ProductCard = ({ product }) => {
   const liked = isInWishlist(product.id);
 
   return (
-    <article className="store-product-card group block animate-fade-in-up">
+    <article className="store-product-card group flex flex-col animate-fade-in-up">
       <div className="block relative" aria-label={product.name}>
         <Link to={productPath}>
           <div className="store-product-card-image w-full aspect-[9/10] rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-2xl group-hover:-translate-y-1.5 transition-all duration-500 relative overflow-hidden">
@@ -37,7 +37,7 @@ export const ProductCard = ({ product }) => {
                 <Clock size={10} /> Preorder
               </span>
             ) : hasRealSale ? (
-              <span className="store-sale-badge absolute top-3 left-3 z-20 bg-white text-brand-coral text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
+              <span className="store-sale-badge sale-badge-pulse absolute top-3 left-3 z-20 bg-white text-brand-coral text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
                 <Timer size={10} />
                 {product.sale_ends_at ? <CountdownTimer endTime={product.sale_ends_at} compact /> : 'Sale'}
               </span>
@@ -49,7 +49,7 @@ export const ProductCard = ({ product }) => {
               className="absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors"
               aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
             >
-              <Heart className={`w-4.5 h-4.5 transition-colors ${liked ? 'fill-brand-pink text-brand-pink' : 'text-white'}`} />
+              <Heart key={liked} className={`w-4.5 h-4.5 transition-colors ${liked ? 'fill-brand-pink text-brand-pink heart-pulse' : 'text-white'}`} />
             </button>
             <button
               type="button"
@@ -77,14 +77,14 @@ export const ProductCard = ({ product }) => {
         <button
           type="button"
           onClick={(e) => { e.preventDefault(); setShowQuickView(true); }}
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full bg-black/70 text-white text-[11px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-brand-pink hover:text-black shadow-lg whitespace-nowrap"
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full bg-black/70 text-white text-[11px] font-bold uppercase tracking-widest opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-brand-pink hover:text-black shadow-lg whitespace-nowrap"
         >
           <Eye className="w-3.5 h-3.5 mr-1.5 inline-block" />
           Quick View
         </button>
       </div>
 
-      <Link to={productPath} className="store-product-card-info mt-4 sm:mt-5 flex flex-col items-center text-center px-2">
+      <Link to={productPath} className="store-product-card-info mt-4 sm:mt-5 flex flex-1 flex-col items-center text-center px-2">
         <h3 className="store-product-card-title text-base sm:text-lg md:text-xl text-gray-900 font-heading font-[850] leading-tight uppercase tracking-wide">
           {product.name}
         </h3>
@@ -100,7 +100,7 @@ export const ProductCard = ({ product }) => {
           </div>
         ) : null}
 
-        <div className="store-product-card-price flex flex-wrap justify-center items-center gap-2.5 mt-3">
+        <div className="store-product-card-price flex flex-wrap justify-center items-center gap-2.5 mt-auto pt-3">
           {hasRealSale ? (
             <>
               <p className="store-sale-price text-xl sm:text-2xl font-bold text-brand-coral font-sans">Rs. {effectivePrice}</p>

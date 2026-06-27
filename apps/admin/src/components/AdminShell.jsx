@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BarChart3, Bell, Camera, Database, FileSpreadsheet, FolderKanban, Gift, HelpCircle, LogOut, Mail, MessageSquare, Moon, Package, Percent, RefreshCw, ScrollText, Settings, Shield, ShoppingBag, Star, Sun, TrendingUp } from 'lucide-react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const links = [
@@ -28,6 +28,7 @@ const links = [
 
 export function AdminShell() {
   const { logout } = useAuth();
+  const location = useLocation();
   const [purging, setPurging] = useState(false);
   const [adminTheme, setAdminTheme] = useState(() => localStorage.getItem('admin_theme') || 'dark');
 
@@ -95,7 +96,9 @@ export function AdminShell() {
       </aside>
 
       <main className="app-main">
-        <Outlet />
+        <div key={location.key} className="page-fade-in">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

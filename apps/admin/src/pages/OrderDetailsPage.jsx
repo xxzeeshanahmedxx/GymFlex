@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Download, Printer, Save, Trash2, Truck } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, patch } from '../lib/api';
 import { downloadOrderPdf } from '../lib/orderPdf';
 
@@ -11,6 +12,7 @@ const itemStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelle
 
 export function OrderDetailsPage() {
   const { id } = useParams();
+  const confirm = useConfirm();
   const [data, setData] = useState(null);
   const [status, setStatus] = useState('new');
   const [callStatus, setCallStatus] = useState('not_needed');
@@ -94,7 +96,7 @@ export function OrderDetailsPage() {
   };
 
   const deleteOrder = async () => {
-    if (!window.confirm('Delete this order permanently?')) return;
+    if (!(await confirm({ title: 'Delete order?', message: 'This will permanently delete this order and all associated data.', confirmLabel: 'Delete' }))) return;
     setError('');
     setMessage('');
     try {

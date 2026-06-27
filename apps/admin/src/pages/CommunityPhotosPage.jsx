@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, put } from '../lib/api';
 
 export function CommunityPhotosPage() {
+  const confirm = useConfirm();
   const [photos, setPhotos] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -19,7 +21,7 @@ export function CommunityPhotosPage() {
   };
 
   const deletePhoto = async (id) => {
-    if (!window.confirm('Delete this photo?')) return;
+    if (!(await confirm({ title: 'Delete photo?', message: 'This will permanently remove this community photo.', confirmLabel: 'Delete' }))) return;
     try { await del(`/api/community-photos?id=${id}`); setMessage('Deleted.'); await load(); } catch (err) { setError(err.message); }
   };
 

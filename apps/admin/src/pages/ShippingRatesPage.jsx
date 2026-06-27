@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, post, put } from '../lib/api';
 
 export function ShippingRatesPage() {
+  const confirm = useConfirm();
   const [rates, setRates] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -47,7 +49,7 @@ export function ShippingRatesPage() {
   };
 
   const deleteRate = async (id) => {
-    if (!window.confirm('Delete this shipping rate?')) return;
+    if (!(await confirm({ title: 'Delete rate?', message: 'This will permanently remove this shipping rate.', confirmLabel: 'Delete' }))) return;
     try {
       await del(`/api/shipping-rates?id=${id}`);
       setMessage('Rate deleted.');

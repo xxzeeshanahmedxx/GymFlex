@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { CheckCircle } from 'lucide-react';
 import { footerSections } from '../data/navigation';
 
 export default function Footer() {
@@ -35,7 +36,12 @@ export default function Footer() {
                 <input type="email" value={nEmail} onChange={(e) => setNEmail(e.target.value)} placeholder="Your email" required className="flex-1 bg-black/40 border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-pink" />
                 <button type="submit" disabled={nLoading} className="bg-brand-pink hover:bg-brand-pink/80 text-black text-xs font-bold px-3 py-1.5 rounded transition-colors whitespace-nowrap">{nLoading ? '...' : 'Subscribe'}</button>
               </form>
-              {nStatus ? <p className="text-[11px] mt-1 text-brand-coral">{nStatus}</p> : null}
+              {nStatus ? (
+                <p className="text-[11px] mt-1 flex items-center gap-1 animate-fade-in-up">
+                  {nStatus === 'Subscribed!' ? <CheckCircle className="w-3 h-3 text-brand-coral newsletter-check" /> : null}
+                  <span className={nStatus === 'Subscribed!' ? 'text-brand-coral' : 'text-red-400'}>{nStatus}</span>
+                </p>
+              ) : null}
             </div>
 
             {footerSections.map((section) => (

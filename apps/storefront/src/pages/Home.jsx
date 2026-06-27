@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
@@ -56,16 +56,27 @@ function HeroImageBanner({ homepage }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const slide = slides[activeIndex] || slides[0] || {};
   const imageKey = `${activeIndex}-${slide.desktop || ''}-${slide.mobile || ''}`;
+  const intervalRef = useRef(null);
 
   useEffect(() => { setActiveIndex(0); }, [slides.length]);
 
-  useEffect(() => {
-    if (slides.length <= 1) return undefined;
-    const interval = window.setInterval(() => {
+  const startInterval = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (slides.length <= 1) return;
+    intervalRef.current = setInterval(() => {
       setActiveIndex((current) => (current + 1) % slides.length);
     }, Number(heroBanner.slideDuration || 4500));
-    return () => window.clearInterval(interval);
   }, [heroBanner.slideDuration, slides.length]);
+
+  useEffect(() => {
+    startInterval();
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [startInterval]);
+
+  const goToSlide = useCallback((index) => {
+    setActiveIndex(index);
+    startInterval();
+  }, [startInterval]);
 
   if (slides.length === 0) {
     return (
@@ -80,8 +91,10 @@ function HeroImageBanner({ homepage }) {
   const animation = heroBanner.animation || 'fade';
   const animationDuration = Number(heroBanner.animationDuration || 600);
 
+  const showDots = slides.length > 1;
+
   return (
-    <section className="hero-banner-section">
+    <section className="hero-banner-section relative">
       <Link to={homepage.heroButtonLink || '/shop'} className="hero-banner-frame" aria-label={homepage.heroButtonText || 'Shop collection'}>
         <div className="hero-banner-skeleton" aria-hidden="true" />
         <picture className="hero-banner-picture">
@@ -97,6 +110,19 @@ function HeroImageBanner({ homepage }) {
           />
         </picture>
       </Link>
+      {showDots ? (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={(e) => { e.preventDefault(); goToSlide(i); }}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${i === activeIndex ? 'bg-white w-6' : 'bg-white/40 hover:bg-white/60'}`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -188,7 +214,7 @@ export default function Home() {
     <div className="home-storefront flex flex-col min-h-screen bg-white">
       <HeroImageBanner homepage={homepage} />
 
-      <div className="reveal-section w-full py-10 sm:py-12 border-b border-gray-200">
+      <div className="reveal-section w-full py-10 sm:py-12 border-b border-gray-200" style={{ animationDelay: '0.1s' }}>
         <div className={sectionWidthClassName}>
           <SectionHeading eyebrow={homepage.featuredEyebrow} title={homepage.featuredTitle} />
           {loading ? <ProductGridSkeleton count={4} /> : null}
@@ -202,8 +228,13 @@ export default function Home() {
         </div>
       </div>
 
-      {!loading && !error && bestsellerProducts.length > 0 ? (
-        <div className={`${sectionWidthClassName} reveal-section py-10 sm:py-12 w-full animate-fade-in-up border-b border-gray-200`}>
+      {loading ? (
+        <div className={`${sectionWidthClassName} reveal-section py-10 sm:py-12 w-full border-b border-gray-200`} style={{ animationDelay: '0.15s' }}>
+          <SectionHeading eyebrow="Trending now" title="Best Sellers" />
+          <ProductGridSkeleton count={4} />
+        </div>
+      ) : !error && bestsellerProducts.length > 0 ? (
+        <div className={`${sectionWidthClassName} reveal-section py-10 sm:py-12 w-full animate-fade-in-up border-b border-gray-200`} style={{ animationDelay: '0.15s' }}>
           <SectionHeading eyebrow="Trending now" title="Best Sellers" />
           <Carousel maxItems={6} centerThreshold={4} itemWidth="home-carousel-item w-[58%] sm:w-[46%] lg:w-[22.5%]">
             {bestsellerProducts.map((product) => <ProductCard key={product.id} product={product} />)}
@@ -222,7 +253,7 @@ export default function Home() {
       )) : null}
 
       {featuredProduct ? (
-        <div className="reveal-section relative bg-brand-pink/40 py-12 sm:py-16 overflow-hidden border-b border-brand-pink/20">
+        <div className="reveal-section relative bg-brand-pink/40 py-12 sm:py-16 overflow-hidden border-b border-brand-pink/20" style={{ animationDelay: '0.2s' }}>
           <div className={sectionWidthClassName}>
             <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
               <div className="relative z-10 mb-8 lg:mb-0 animate-fade-in-up">
@@ -246,8 +277,13 @@ export default function Home() {
         </div>
       ) : null}
 
-      {!loading && !error && saleProducts.length > 0 ? (
-        <div className={`${sectionWidthClassName} reveal-section py-10 sm:py-12 w-full animate-fade-in-up border-b border-gray-200`}>
+      {loading ? (
+        <div className={`${sectionWidthClassName} reveal-section py-10 sm:py-12 w-full border-b border-gray-200`} style={{ animationDelay: '0.3s' }}>
+          <SectionHeading eyebrow="Limited deals" title="On Sale" />
+          <ProductGridSkeleton count={4} />
+        </div>
+      ) : !error && saleProducts.length > 0 ? (
+        <div className={`${sectionWidthClassName} reveal-section py-10 sm:py-12 w-full animate-fade-in-up border-b border-gray-200`} style={{ animationDelay: '0.3s' }}>
           <SectionHeading eyebrow="Limited deals" title="On Sale" />
           <Carousel maxItems={6} centerThreshold={4} itemWidth="home-carousel-item w-[58%] sm:w-[46%] lg:w-[22.5%]">
             {saleProducts.map((product) => <ProductCard key={product.id} product={product} />)}
@@ -261,7 +297,7 @@ export default function Home() {
       ) : null}
 
       {recentlyViewed.length >= 4 ? (
-        <div className={`${sectionWidthClassName} reveal-section py-10 sm:py-12 w-full animate-fade-in-up border-b border-gray-200`}>
+        <div className={`${sectionWidthClassName} reveal-section py-10 sm:py-12 w-full animate-fade-in-up border-b border-gray-200`} style={{ animationDelay: '0.35s' }}>
           <SectionHeading title={homepage.recentTitle} />
           <Carousel maxItems={4} centerThreshold={4}>
             {recentlyViewed.slice(0, 4).map((product) => <ProductCard key={product.id} product={product} />)}

@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, post, put } from '../lib/api';
 
 export function TieredPricingPage() {
+  const confirm = useConfirm();
   const [productId, setProductId] = useState('');
   const [tiers, setTiers] = useState([]);
   const [error, setError] = useState('');
@@ -54,7 +56,7 @@ export function TieredPricingPage() {
   };
 
   const deleteTier = async (id) => {
-    if (!window.confirm('Delete this tier?')) return;
+    if (!(await confirm({ title: 'Delete tier?', message: 'This will permanently remove this tiered pricing rule.', confirmLabel: 'Delete' }))) return;
     try {
       await del(`/api/tiered-pricing?id=${id}`);
       setMessage('Tier deleted.');

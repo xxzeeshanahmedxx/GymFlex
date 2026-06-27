@@ -10,7 +10,7 @@ function DrawerShell({ isOpen, title, onClose, children, footer }) {
     <div className="fixed inset-0 z-50 overflow-hidden">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
-      <div className="fixed inset-y-0 right-0 max-w-md w-full flex shadow-2xl animate-fade-in-up" style={{ animationDuration: '0.3s' }}>
+      <div className="fixed inset-y-0 right-0 max-w-md w-full flex shadow-2xl cart-drawer-slide-in">
         <div className="w-full h-full bg-white flex flex-col">
           <div className="px-6 py-8 border-b border-gray-100 flex justify-between items-center bg-gray-50">
             <h2 className="text-2xl font-heading font-[850] uppercase tracking-widest text-gray-900">{title}</h2>

@@ -9,7 +9,7 @@ export default function CompareBar() {
   if (compareList.length < 2) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0d0d0d] border-t border-brand-pink/20 shadow-2xl px-4 py-3 sm:px-6">
+    <div className="compare-bar-slide-up fixed bottom-0 left-0 right-0 z-50 bg-[#0d0d0d] border-t border-brand-pink/20 shadow-2xl px-4 py-3 sm:px-6">
       <div className="max-w-[88rem] mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 overflow-x-auto hide-scrollbar">
           {compareList.map((product) => (

@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { useConfirm } from '../components/ConfirmProvider';
 import { del, get, post, put } from '../lib/api';
 
 export function FaqPage() {
+  const confirm = useConfirm();
   const [items, setItems] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -37,7 +39,7 @@ export function FaqPage() {
   };
 
   const deleteItem = async (id) => {
-    if (!window.confirm('Delete this FAQ?')) return;
+    if (!(await confirm({ title: 'Delete FAQ?', message: 'This will permanently remove this FAQ entry.', confirmLabel: 'Delete' }))) return;
     try { await del(`/api/faq-admin?id=${id}`); setMessage('FAQ deleted.'); await loadItems(); } catch (err) { setError(err.message); }
   };
 
